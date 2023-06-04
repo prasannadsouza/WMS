@@ -1,0 +1,56 @@
+** Project Outline
+- Customer login -> www.warehouse.com/customer/login
+  - Customer Admin -> customer/dashboard
+    - add/remove/update warehouses   ../warehouses
+    - add/remove/update users in warehouses ../users
+
+- Customer employee login -> www.warehouse.com/customer/login
+  - redirect to assigned warehouse automatically -> www.warehouse.com/dashboard
+
+- Initial basic admin
+  - /admin/login
+
+- Warehouse dashboard (for all employees - defaults to assigned warehouse)
+  - For the user
+    - Picking list
+    - Blocked inventories
+  - For the customer admin
+    - sync status
+      - data status from external sources
+      - last fetch time and other status
+- Top navbar - collapse on mobile
+- Orders
+- Inventory List
+  - move, adjust
+  - filter/search
+  - operations/edit
+- In delivery
+- Manufacturing list
+- Major inventory (initiated by admin, completed by employees)
+- Settings
+- Integration setups with external systems
+- User role and features (role based access)
+- Article history
+- Picking
+- Return orders
+- Place management / shelf management
+- Article management
+- Access logs
+- Localization
+- Inventory summary
+
+
+- Super admin login -> admin.warehouse.com/login
+  - add/remove customer
+    - one user inserted by default -> sys admin user  -> customer email, 1 warehouse by default
+  - other super admin things
+
+
+- integration applications
+  - visma local installer + service starter
+  - visma http for cloud
+  - visma business for local
+  - fortknox
+  - woo commerce
+  - klarna
+  - bokio
