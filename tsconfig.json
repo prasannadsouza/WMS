@@ -23,6 +23,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!lib!store!appslice.ts~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!lib!constants.tsx~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!pages!_app.tsx~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!app!_app.tsx~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!app!_app.tsx~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!lib!store!appDataSlice.ts~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!lib!store!store.ts~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!lib!store!appDataStore.ts~", "../../../Users/PRASAN~1.DSO/AppData/Local/Temp/!drive_c!Prasanna!Code!wms!pages!_app.tsx~"],
   "exclude": ["node_modules"]
 }
