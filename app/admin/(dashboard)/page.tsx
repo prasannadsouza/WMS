@@ -4,11 +4,16 @@ import { AdminCustomerTable } from "@/components/tables/admin-customer-table";
 //import { useAppDispatch } from "../../../lib/store/store"
 import { appDataSlice } from "@/lib/store/appDataSlice"
 import { useAppDispatch } from "@/lib/store/store"
+import React, { useEffect } from 'react';
 
 export default function AdminHome() {
     const { setCurrentTitle } = appDataSlice.actions
     const dispatch = useAppDispatch()
-    dispatch(setCurrentTitle("Customers"))
+
+    useEffect(() => {
+        dispatch(setCurrentTitle("Customers"))
+    }, []);
+
     return (
         <>
             <AdminCustomerTable />

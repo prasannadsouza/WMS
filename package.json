@@ -2,8 +2,10 @@
   "name": "wms",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "cross-env NODE_OPTIONS='--inspect' next dev",
+    "scripts": {
+         "dev": "next dev",
+        "dev:debug": "cross-env NODE_OPTIONS='--inspect' next dev",
+        "dev:debug2": "cross-env NODE_OPTIONS='--inspect=8000' next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
