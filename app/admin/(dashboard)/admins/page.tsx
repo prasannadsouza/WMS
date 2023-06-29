@@ -1,7 +1,7 @@
 'use client'
 import { AdminUserTable } from "@/components/tables/admin-user-table";
-//import { AppDataSlice } from "../../../../lib/store/appDataSlice"
-import { appDataSlice } from "../../../../lib/store/appDataSlice"
+//import { AppDataSlice } from "@/lib/store/appDataSlice"
+import { appDataSlice } from "@/lib/store/appDataSlice"
 import { useDispatch } from "react-redux";
 
 export default function AdminHome() {

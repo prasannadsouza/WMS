@@ -6,9 +6,8 @@ import * as ru_navigationmenu from "@radix-ui/react-navigation-menu"
 import * as ru_menubar from "@radix-ui/react-menubar";
 import { cn } from "@/lib/utils"
 import { User, ChevronDown, Menu } from "lucide-react";
-
-//import {useAppSelector } from "../../lib/store/store"
-import { getAppData, useAppSelector } from "../../lib/store/store"
+//import {getAppData } from "@/lib/store/store"
+import { useAppSelector } from "@/lib/store/store"
 
 export const getMenuItemClass = () => {
     return cn("cursor-pointer group text-[15px] leading-none text-slate-700 rounded flex items-center h-[40px] px-[10px] relative select-none outline-none data-[state=open]:bg-slate-400 data-[state=open]:text-slate-600 data-[highlighted]:bg-gradient-to-br data-[highlighted]:from-slate-500 data-[highlighted]:to-slate-950 data-[highlighted]:text-slate-100 data-[highlighted]:data-[state=open]:text-slate-100 data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none");
@@ -94,11 +93,15 @@ export interface NavigationBarProps {
     AppLogoSource?: string | null | undefined;
 }
 export const NavigationBar = (props: NavigationBarProps) => {
-    const appData = getAppData(useAppSelector);
+
+
+    let currentTitle = "Page Title"
+    currentTitle = useAppSelector((state) => state.AppDataReducer?.currentTitle);
+
     return (<ru_navigationmenu.NavigationMenu >
         <div className="p-1 flex flex-wrap">
             {getMainMenu(props)}
-            <div className={cn("grow text-right sm:text-center p-1")}>{appData.currentTitle}</div>
+            <div className={cn("grow text-right sm:text-center p-1")}>{currentTitle}</div>
             {getUserMenu(props)}
         </div>
         <hr className="mb-1 border border-slate-200"></hr>
