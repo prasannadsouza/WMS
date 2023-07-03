@@ -59,6 +59,9 @@ dependencies:
   next:
     specifier: 13.4.7
     version: 13.4.7(react-dom@18.2.0)(react@18.2.0)
+  next-redux-wrapper:
+    specifier: ^8.1.0
+    version: 8.1.0(next@13.4.7)(react-redux@8.1.1)(react@18.2.0)
   react:
     specifier: 18.2.0
     version: 18.2.0
@@ -2616,6 +2619,18 @@ packages:
 
   /natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
+    dev: false
+
+  /next-redux-wrapper@8.1.0(next@13.4.7)(react-redux@8.1.1)(react@18.2.0):
+    resolution: {integrity: sha512-2hIau0hcI6uQszOtrvAFqgc0NkZegKYhBB7ZAKiG3jk7zfuQb4E7OV9jfxViqqojh3SEHdnFfPkN9KErttUKuw==}
+    peerDependencies:
+      next: '>=9'
+      react: '*'
+      react-redux: '*'
+    dependencies:
+      next: 13.4.7(react-dom@18.2.0)(react@18.2.0)
+      react: 18.2.0
+      react-redux: 8.1.1(@types/react-dom@18.2.4)(@types/react@18.2.8)(react-dom@18.2.0)(react@18.2.0)(redux@4.2.1)
     dev: false
 
   /next@13.4.7(react-dom@18.2.0)(react@18.2.0):
