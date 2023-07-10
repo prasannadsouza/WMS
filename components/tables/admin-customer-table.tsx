@@ -1,4 +1,4 @@
-'use client';
+'use client'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { MoreHorizontal } from "lucide-react"
 import { DataTableColumnHeader } from "./data-column-header";
 import { DataTable } from "./data-table";
+import { appStore, selectAppData } from "@/lib/store/store"
 
 export type Customer = {
     id: string,
@@ -94,6 +95,11 @@ const columns = [
 ]
 
 export function AdminCustomerTable() {
+    const appData = selectAppData(appStore.getState());
+    console.log({
+        component: "AdminCustomerTable",
+        appData: appData
+    })
     return (
         <DataTable columns={columns} data={customers} />
     );

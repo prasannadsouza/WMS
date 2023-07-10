@@ -1,18 +1,26 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-//import { AppReducerConstants } from "../../lib/constants"
-import { AppReducerConstants } from "../../lib/constants"
+/*
+import { AppReducer as AppReducerConstants } from "@/lib/types/constants";
+import { AppUser } from "@/lib/types/types";
+*/
+
+import { AppReducer as AppReducerConstants } from "@/lib/types/constants";
+import { AppUser } from "@/lib/types/types";
 
 export interface AppData {
     currentTitle: string;
-    currentUserTitle: string | null;
+    companyName: string | null,
+    loggedInUser: AppUser | null,
 }
+
 const initialState: AppData = {
     currentTitle: "WMS",
-    currentUserTitle: null,
+    companyName: null,
+    loggedInUser: null,
 };
 
 export const appDataSlice = createSlice({
-    name: AppReducerConstants.APP,
+    name: AppReducerConstants.app,
     initialState,
     reducers: {
         setAppData: (state, action: PayloadAction<AppData>) => {
@@ -21,8 +29,11 @@ export const appDataSlice = createSlice({
         setCurrentTitle: (state, action) => {
             return { ...state, currentTitle: action.payload };
         },
-        setCurrentUserTitle: (state, action) => {
-            return { ...state, currentUserTitle: action.payload };
-        }
+        setCompanyName: (state, action) => {
+            return { ...state, companyName: action.payload };
+        },
+        setLoggedInUser: (state, action) => {
+            return { ...state, loggedInUser: action.payload };
+        },
     },
 });

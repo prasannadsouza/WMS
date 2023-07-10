@@ -1,36 +1,22 @@
-import { createSelector, configureStore, combineReducers, ThunkAction, Action, AnyAction, } from "@reduxjs/toolkit";
+import { createSelector, configureStore, ThunkAction, Action, } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
-import { HYDRATE, } from "next-redux-wrapper";
-//import { appDataSlice } from "./appDataSlice"
-import { appDataSlice, AppData } from "./appDataSlice"
 
-const combinedAppReducers = combineReducers({
-    AppDataReducer: appDataSlice.reducer,
-})
+/*
+import { appDataSlice, AppData } from "@/lib/store/appDataSlice"
+*/
 
-export type appReducer = ReturnType<typeof combinedAppReducers>
+import { appDataSlice, AppData } from "@/lib/store/appDataSlice"
 
-const reducers = (state: appReducer, action: AnyAction) => {
-    if (action.type === HYDRATE) {
-        const nextState = {
-            ...state, // use previous state
-            ...action.payload, // apply delta from hydration
-        };
-        return nextState;
-    } else {
-        return combinedAppReducers(state, action);
-    }
-};
-
-export const store = configureStore({
+export const appStore = configureStore({
     reducer: {
-        reducers
+        AppDataReducer: appDataSlice.reducer,
     },
     devTools: true,
 });
 
-export type AppDispatch = typeof store.dispatch;
-export type AppState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof appStore.dispatch;
+export type AppState = ReturnType<typeof appStore.getState>;
+export type AppStore = typeof appStore;
 export type HookAppReducerType = TypedUseSelectorHook<AppState>
 export type AppThunk<ReturnType = void> = ThunkAction<
     ReturnType,
@@ -42,5 +28,5 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 export const useAppDispatch = () => useDispatch<AppDispatch>();
 export const useAppSelector: TypedUseSelectorHook<AppState> = useSelector;
 
-const appDataSliceSelector = (state: AppState): AppData => state?.reducers?.AppDataReducer;
+const appDataSliceSelector = (state: AppState): AppData => state?.AppDataReducer;
 export const selectAppData = createSelector(appDataSliceSelector, s => s);
