@@ -12,35 +12,23 @@ import { Button } from "@/components/ui/button"
 import { fnValidateUserType } from "@/components/navs/navigationbar";
 import { ErrorData } from "@/lib/types/types"
 import { errorCodes } from "@/lib/types/errorcodes"
-import FormInput from "@/components/customui/forminput"
+import { FormInput, FormInputHandle } from "@/components/customui/forminput"
 import { X } from "lucide-react";
 import { useRef, useTransition, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 
-
-export default function LoginForm({
-    validateUser,
-    userMenuTriggerElement,
-    postLoginURL }:
-    {
-        validateUser: fnValidateUserType,
-        userMenuTriggerElement: JSX.Element
-        postLoginURL: string
-        ;
-    }) {
+export interface LoginFormProps {
+    validateUser: fnValidateUserType,
+    userMenuTriggerElement: JSX.Element,
+    postLoginURL: string
+}
+export default function LoginForm(props: LoginFormProps) {
     let [isPending, startTransition] = useTransition();
+    const refUsername = useRef<FormInputHandle>(null);
+    const refPassword = useRef<FormInputHandle>(null);
 
     function getInitialModel() {
         return {
-            refUsername: useRef<HTMLInputElement>(null),
-            refPassword: useRef<HTMLInputElement>(null),
-            userNameValue: "",
-            passwordValue: "",
-            userNameError: "",
-            passwordError: "",
-            validateUser: validateUser,
-            userMenuTriggerElement: userMenuTriggerElement,
-            postLoginURL: postLoginURL,
             isLoginSuccess: false,
         }
     }
@@ -49,42 +37,38 @@ export default function LoginForm({
     const router = useRouter()
 
     useEffect(() => {
-        router.push(model.postLoginURL)
+        router.push(props.postLoginURL)
     }, [model.isLoginSuccess === true]);
 
     function clearErrors() {
-        setModel({ ...model, userNameError: "", passwordError: "" });
+        refPassword?.current?.setError("");
+        refUsername?.current?.setError("");
     }
 
     function onOpenChange(open: boolean) {
         if (open) clearErrors();
     }
 
-
     function loginHasErrors(errors: ErrorData[] | null) {
         if (!(errors?.length)) return false
 
         let unhandledErrors: ErrorData[] = [];
-        let errorHandled = false;
 
         for (var error of errors) {
             switch (error.errorCode) {
                 case errorCodes.username_cannotbe_blank: {
-                    model.userNameError = "Please provide username x";
-                    model.refUsername.current!.focus();
-                    errorHandled = true;
+                    refUsername?.current?.setError("Please provide username");
+                    refUsername?.current?.setFocus();
                     break;
                 }
                 case errorCodes.password_cannotbe_blank: {
-                    model.passwordError = "Please provide password x";
-                    model.refUsername.current!.focus();
-                    errorHandled = true;
+                    refPassword?.current?.setError("Please provide password");
+                    refPassword?.current!.setFocus();
                     break;
                 }
                 case errorCodes.username_or_password_isinvalid: {
-                    model.userNameError = "Username or password is invalid"
-                    model.refUsername.current!.focus();
-                    errorHandled = true;
+                    refUsername?.current?.setError("Username or password is invalid");
+                    refUsername?.current?.setFocus();
                     break;
                 }
                 default: {
@@ -94,69 +78,60 @@ export default function LoginForm({
             }
         }
 
-        if (errorHandled) {
-            setModel({
-                ...model,
-                userNameError: model.userNameError,
-                passwordError: model.passwordError
-            });
-            return true;
-        }
-
         if (unhandledErrors.length > 0) alert(`An unknon error occcurred. ErrorCode: ${unhandledErrors[0].errorCode}`)
         return true;
     }
 
     async function submitLogin() {
 
-
-
         let hasError = false;
 
-        model.userNameError = ""
-        if (!model.refUsername.current!.value.length) {
-            model.userNameError = "Please provide username";
+        console.log({
+            component: "loginform!submitlogin",
+            username: refUsername.current?.getValue(),
+            password: refPassword.current?.getValue(),
+        })
+
+        refUsername?.current?.setError("");
+        if (!refUsername.current!.getValue().length) {
+            refUsername?.current?.setError("Please provide username");
+            refUsername?.current?.setFocus();
             hasError = true;
         }
 
-        model.passwordError = ""
-        if (!model.refPassword.current!.value.length) {
-            model.passwordError = "Please provide password"
+        refPassword?.current?.setError("");
+        if (!refPassword.current!.getValue().length) {
+            refPassword?.current?.setError("Please provide password");
+            refPassword?.current!.setFocus();
             hasError = true
         }
 
-        if (hasError) {
-            setModel({
-                ...model,
-                userNameError: model.userNameError,
-                passwordError: model.passwordError
-            });
-            return;
-        }
+        console.log({
+            component: "loginform!submitlogin!aftervalidateuser",
+            username: refUsername.current?.getValue(),
+            password: refPassword.current?.getValue(),
+            hasError,
+        })
+        if (hasError) return;
 
-        const response = await model.validateUser({
-            userName: model.refUsername.current!.value,
-            password: model.refPassword.current!.value
+        const response = await props.validateUser({
+            userName: refUsername.current!.getValue(),
+            password: refPassword.current!.getValue(),
         })
 
-        if (loginHasErrors(response.errors)) return;
-        clearErrors();
+        if (loginHasErrors(response.errors)) {
+            //refUsername?.current?.setValue(refUsername?.current?.getValue());
+            //refPassword?.current?.setValue(refPassword?.current?.getValue());
+            return;
+        }
         setModel({ ...model, isLoginSuccess: true });
-    }
-
-    function onUserNameChange(value: string) {
-
-    }
-
-    function onPasswordChange(value: string) {
-
     }
 
     return (
         <AlertDialog onOpenChange={onOpenChange}>
             <AlertDialogTrigger asChild>
                 <Button variant="link">
-                    {model.userMenuTriggerElement}
+                    {props.userMenuTriggerElement}
                 </Button>
             </AlertDialogTrigger>
             <AlertDialogContent className="p-2 rounded gap-1">
@@ -166,13 +141,13 @@ export default function LoginForm({
                     </AlertDialogCancel>
                 </AlertDialogHeader>
                 <div>
-                    <FormInput inputType={"text"} title="Username" minWidth={200} onTextChange={onUserNameChange} refInput={model.refUsername} error={model.userNameError} />
-                    <FormInput inputType={"password"} title="Password" minWidth={200} onTextChange={onPasswordChange} refInput={model.refPassword} error={model.passwordError} containerClassName="mt-2" />
+                    <FormInput ref={refUsername} inputType={"text"} title="Username" minWidth={"200px"} />
+                    <FormInput ref={refPassword} inputType={"password"} title="Password" minWidth={200} containerClassName="mt-2" />
                 </div>
                 <AlertDialogFooter className="block">
-                    <div className="flex flex-wrap justify--end">
+                    <div className="flex flex-wrap justify-end">
                         <div className="grow">
-                            <Button variant="link" className="underline" >Forgot Password</Button>
+                            <Button variant="link" className="underline px-1 py-1" >Forgot Password</Button>
                         </div>
                         <Button className="h-9" onClick={async () => startTransition(async () => await submitLogin())}>Login</Button>
                     </div>

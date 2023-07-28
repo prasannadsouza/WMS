@@ -145,6 +145,6 @@ export const NavigationBar = (props: NavigationBarProps) => {
             </div>
             {getUserMenu(props)}
         </div>
-        <hr className="mb-1 border border-slate-200"></hr>
+        <hr />
     </NavigationMenu>)
 }

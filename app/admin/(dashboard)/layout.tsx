@@ -36,9 +36,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     return (
 
         <div className="w-full h-full">
-            <div className="px-4 pt-4">
-                {children}
-            </div>
+            {children}
         </div>
     );
 }
