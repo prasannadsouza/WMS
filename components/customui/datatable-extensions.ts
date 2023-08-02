@@ -4,7 +4,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Column, SortingState, Table as TablePrimitive, VisibilityState } from "@tanstack/react-table"
-import { ColumnConfig } from "@/lib/types/types";
+import { TableConfig } from "@/lib/types/types";
+import { App as AppConstants } from "@/lib/types/constants"
 
 const useStickyHeader = (defaultSticky = false) => {
     const [isSticky, setIsSticky] = useState(defaultSticky);
@@ -50,9 +51,10 @@ export interface ColumnMeta {
     title: string
 }
 
-export interface TableMeta {
+export interface TableMeta<T> {
     sortChanged?: () => void
-    saveColumnConfig?: (saveForAll: boolean) => void
+    saveTableConfig?: (table: TablePrimitive<T>, saveForAll: boolean) => void
+    tableConfig?: TableConfig | null
 }
 
 export function getColumnTitle<T>(column: Column<T, unknown>) {
@@ -64,10 +66,10 @@ export function getColumnMeta<T>(column: Column<T, unknown>) {
 }
 
 export function getTableMeta<T>(table: TablePrimitive<T>) {
-    return table.options.meta as TableMeta;
+    return table.options.meta as TableMeta<T>;
 }
 
-export function getColumnVisibilityState(columnConfig: ColumnConfig | null) {
+export function getColumnVisibilityState(columnConfig: TableConfig | null) {
     let visibilityState: VisibilityState = {}
     columnConfig?.hidden?.forEach((col) => {
         visibilityState[col.column] = false;
@@ -75,7 +77,7 @@ export function getColumnVisibilityState(columnConfig: ColumnConfig | null) {
     return visibilityState;
 }
 
-export function getColumnSortingState(columnConfig: ColumnConfig | null) {
+export function getColumnSortingState(columnConfig: TableConfig | null) {
     let sortingState: SortingState = [];
     columnConfig?.sort?.sort((a, b) => {
         const valueA = a.index;
@@ -97,7 +99,7 @@ export function getColumnSortingState(columnConfig: ColumnConfig | null) {
     return sortingState;
 }
 
-export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: ColumnConfig | null) {
+export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: TableConfig | null) {
 
     const allColumns = table.getAllColumns();
     const columnSequence = allColumns.map((col, index) => {
@@ -152,4 +154,33 @@ export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: Col
 
     table.resetColumnOrder(true);
 
+}
+
+export function initializeTableState<T>(table: TablePrimitive<T>, columnConfig: TableConfig | null) {
+    const tableMeta = getTableMeta(table)
+    let recordsPerPage = Math.min(...AppConstants.Pagination.pageSizeRange);
+    setColumnSequence(table, columnConfig)
+
+    table.setColumnVisibility(getColumnVisibilityState(columnConfig))
+    table.setSorting(getColumnSortingState(columnConfig))
+    if (columnConfig?.pagination?.recordsPerPage) recordsPerPage = columnConfig.pagination.recordsPerPage
+    table.setPageSize(recordsPerPage)
+
+    tableMeta?.sortChanged && tableMeta?.sortChanged();
+    return {
+        sort: columnConfig?.sort || [],
+        hidden: columnConfig?.hidden || [],
+        sequence: table.getAllColumns().map((column, index) => ({
+            column: column.id,
+            index: index,
+        })),
+        pagination: {
+            recordsPerPage
+        }
+    } as TableConfig
+}
+
+export const DataTableConstants = {
+    actions: "actions",
+    select: "select"
 }

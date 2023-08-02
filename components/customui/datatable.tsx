@@ -27,7 +27,7 @@ import { cn } from "@/lib/utils"
 
 import * as React from "react"
 import { Column, ColumnSort, flexRender, Table as TablePrimitive } from "@tanstack/react-table"
-import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretSortIcon, CaretUpIcon, Cross2Icon } from "@radix-ui/react-icons"
+import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretSortIcon, CaretUpIcon, CheckboxIcon, Cross2Icon, DotsHorizontalIcon } from "@radix-ui/react-icons"
 
 import {
     DropdownMenu,
@@ -48,7 +48,7 @@ import {
 } from "@/components/ui/table"
 import { DataTablePagination } from "@/components/customui/datatable-pagination"
 import { ChevronDown } from "lucide-react";
-import useStickyHeader, { getColumnTitle, getTableMeta } from "@/components/customui/datatable-extensions"
+import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState } from "@/components/customui/datatable-extensions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -61,8 +61,8 @@ export function DataTable<T>({
     const id = React.useId();
     const { tableRef, isSticky } = useStickyHeader();
 
-    const [saveForAll, setSaveForAll] = React.useState(false)
-    const saveColumnConfig = getTableMeta(table).saveColumnConfig;
+    const [saveTableConfigForAll, setSaveTableConfigForAll] = React.useState(false)
+    const tableMeta = getTableMeta(table)
 
     const renderHeader = () => {
         return (
@@ -143,13 +143,21 @@ export function DataTable<T>({
                             </DropdownMenuSub>
                             <DropdownMenuSeparator />
                             <div className="flex items-center space-x-1">
-                                <Button onClick={() => { saveColumnConfig && saveColumnConfig(saveForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2")} >Save</Button>
+                                <Button onClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, saveTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2")} >Save</Button>
                                 <div className="flex items-center p-1 rounded hover:border-2"  >
                                     <Checkbox onCheckedChange={(value: any) =>
-                                        setSaveForAll(value)
+                                        setSaveTableConfigForAll(value)
                                     } className="h-6 w-6" id={"cbsaveconfigforall" + id} ></Checkbox>
                                     <label className="ps-1 grow" htmlFor={"cbsaveconfigforall" + id} >For All</label>
                                 </div>
+
+                            </div>
+                            <DropdownMenuSeparator />
+                            <div className="flex items-center space-x-1">
+                                <Button onClick={() => {
+                                    if (!tableMeta?.tableConfig) return;
+                                    initializeTableState(table, tableMeta!.tableConfig)
+                                }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2")}>Reset</Button>
 
                             </div>
                         </DropdownMenuContent>
@@ -192,7 +200,7 @@ function CheckBoxForShowColumn<T>({ column }: { column: Column<T, unknown> }) {
             }
             className="h-6 w-6" checked={column.getIsVisible()}>
         </Checkbox>
-        <label className="ps-1 grow" htmlFor={id} >{getColumnTitle(column)}</label>
+        <label className="ps-1 grow" htmlFor={id} >        <span>{getColumnTitleElement(column)}</span></label>
 
     </div>)
 }
@@ -280,7 +288,7 @@ function SortOptionsForColumn<T>({ table, allColumns, column }: { table: TablePr
                 ) : (
                     <CaretSortIcon className="h-5 w-5" />
                 )}
-                <span >{getColumnTitle(column)}</span>
+                {getColumnTitleElement(column)}
             </Button>
 
         </div>
@@ -341,7 +349,7 @@ function SequenceOptionsForColumn<T>({ table, column }: { table: TablePrimitive<
     }
 
     return (<div className="flex items-center justify-between hover:underline" >
-        <span >{getColumnTitle(column)}</span>
+        {getColumnTitleElement(column)}
         <div className="flex justify-between">
             {isFirst ? <div className="h-10 w-10"></div> : <Button className={cn("px-0.5 py-0.5 h-10 w-10 rounded hover:border-2")} variant="ghost" onClick={() => moveColumnUp()}  ><CaretUpIcon className="h-5 w-5" /></Button>}
             {isLast ? <div className="h-10 w-10"></div> : <Button className={cn("px-0.5 py-0.5 h-10 w-10 rounded hover:border-2")} variant="ghost" onClick={() => moveColumnDown()}  ><CaretDownIcon className="h-5 w-5" /></Button>}
@@ -387,4 +395,15 @@ function getColumnsForSort<T>(table: TablePrimitive<T>) {
     const bottomCols = getColumnsByName(table.getAllFlatColumns().filter((column) => column.getCanSort() && column.getSortIndex() < 0))
     const allCols = topCols.concat(bottomCols)
     return allCols
+}
+
+function getColumnTitleElement<T>(column: Column<T, unknown>) {
+    let title = getColumnTitle(column)
+    if (column.id === DataTableConstants.actions) {
+        return <div className="flex space-x-1"><span>{title}</span><DotsHorizontalIcon className="h-6 w-6" /></div>
+    }
+    if (column.id === DataTableConstants.select) {
+        return <div className="flex space-x-1"><span>{title}</span><CheckboxIcon className="h-6 w-6" /></div>
+    }
+    return <span>{title}</span>
 }

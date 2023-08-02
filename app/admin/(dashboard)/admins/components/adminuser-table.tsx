@@ -12,14 +12,14 @@ import { TableMeta, getColumnSortingState, getColumnVisibilityState, setColumnSe
 
 import { DataTable } from "@/components/customui/datatable";
 import { AppUser } from "@/lib/types/admin/types";
-import { adminUserColumns } from "../components/adminuser-columns"
-import { ColumnConfig, getResponseData, SortColumn } from "@/lib/types/types";
-import { getAdminUsersType, saveColumnConfigType, getColumnConfigType, getColumnConfig } from "../data"
+import { GetAdminUserColumns } from "../components/adminuser-columns"
+import { TableConfig, getResponseData, SortColumn } from "@/lib/types/types";
+import { getAdminUsersType, saveTableConfigType, getTableConfigType } from "../data"
 import { App as AppConstants } from "@/lib/types/constants"
-import { TableMeta, getColumnSortingState, getColumnVisibilityState, setColumnSequence } from "@/components/customui/datatable-extensions";
+import { TableMeta, initializeTableState } from "@/components/customui/datatable-extensions";
 
 import React from 'react'
-import { PaginationState } from '@tanstack/react-table'
+import { PaginationState, Table as TablePrimitive } from '@tanstack/react-table'
 import {
     ColumnFiltersState,
     getCoreRowModel,
@@ -31,25 +31,34 @@ import {
     useReactTable,
 } from "@tanstack/react-table"
 
-export default function AdminUserTable({ getAdminUsers, saveColumnConfig }: {
-    getAdminUsers: getAdminUsersType,
-    getColumnConfig: getColumnConfigType,
-    saveColumnConfig?: saveColumnConfigType
-}) {
+export default function AdminUserTable({
+    getAdminUsers,
+    getTableConfig,
+    saveTableConfig,
+    enableRowSelection,
+    enableMultiRowSelection,
+    showActions }: {
+        getAdminUsers: getAdminUsersType,
+        getTableConfig: getTableConfigType,
+        saveTableConfig?: saveTableConfigType,
+        enableRowSelection?: boolean,
+        enableMultiRowSelection?: boolean
+        showActions?: boolean
+    }) {
 
     const [responseData, setResponseData] = React.useState(getResponseData<AppUser>());
-    const mainColumns = React.useMemo(() => adminUserColumns, [])
+    const mainColumns = React.useMemo(() => GetAdminUserColumns(enableRowSelection, enableMultiRowSelection, showActions), [])
 
-    const [{ pageIndex, pageSize }, setPagination] =
-        React.useState<PaginationState>({
-            pageIndex: 0,
-            pageSize: Math.min(...AppConstants.Pagination.pageSizeRange),
-        })
+    // const [{ pageIndex, pageSize }, setPagination] =
+    //     React.useState<PaginationState>({
+    //         pageIndex: 0,
+    //         pageSize: Math.min(...AppConstants.Pagination.pageSizeRange),
+    //     })
 
     const [rowSelection, setRowSelection] = React.useState({})
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [isSortingChanged, setIsSortingChanged] = React.useState(false)
-    const [columnConfig, setColumnConfig] = React.useState<ColumnConfig | null>(null);
+    const [tableConfig, setTableConfig] = React.useState<TableConfig | null>(null);
 
     const table = useReactTable({
         data: responseData.data ?? [],
@@ -57,27 +66,26 @@ export default function AdminUserTable({ getAdminUsers, saveColumnConfig }: {
         state: {
             rowSelection,
             columnFilters,
-            //columnVisibility: columnVisibility,
-            pagination: {
-                pageIndex: pageIndex,
-                pageSize: pageSize,
-            }
+            // pagination: {
+            //     pageIndex: pageIndex,
+            //     pageSize: pageSize,
+            // }
         },
-        enableRowSelection: true,
+        enableRowSelection,
+        enableMultiRowSelection,
         onRowSelectionChange: setRowSelection,
-        onPaginationChange: setPagination,
+        //onPaginationChange: setPagination,
         onColumnFiltersChange: setColumnFilters,
-        //onColumnVisibilityChange: setColumnVisibility,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        getPaginationRowModel: getPaginationRowModel(),
+        //getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
         manualPagination: true,
         enableMultiSort: true,
         manualSorting: true,
-        pageCount: responseData.pagination?.totalRecords ?? 0,
+        pageCount: responseData.pagination?.totalRecords ? 1000 : 0,
         initialState: {
             pagination: {
                 pageIndex: 0,
@@ -86,20 +94,24 @@ export default function AdminUserTable({ getAdminUsers, saveColumnConfig }: {
         },
         meta: {
             sortChanged: () => {
-                if (columnConfig === null) return;
+                if (tableConfig === null) return;
                 setIsSortingChanged(true);
                 console.log({
                     component: "admintable.customsorting change"
                 })
             },
-            saveColumnConfig: async (saveForAll: boolean) => {
+            saveTableConfig: async (table: TablePrimitive<AppUser>, saveForAll: boolean) => {
+                //const tableConfig: TableConfig = {
+
+                //}
                 console.log({
-                    component: "admintable.saveColumnConfig",
+                    component: "admintable.saveTableConfig",
                     saveForAll,
                 })
-                saveColumnConfig && await saveColumnConfig(saveForAll);
-            }
-        } as TableMeta
+                saveTableConfig && await saveTableConfig(saveForAll);
+            },
+            tableConfig: tableConfig,
+        } as TableMeta<AppUser>
     })
 
     React.useEffect(() => {
@@ -111,16 +123,17 @@ export default function AdminUserTable({ getAdminUsers, saveColumnConfig }: {
             } as SortColumn
         });
 
-        if (columnConfig === null) return;
+        if (tableConfig === null) return;
         (async () => {
             try {
-                const responseData = await getAdminUsers(pageIndex, pageSize, sortColumns);
+                const responseData = await getAdminUsers(table.getState().pagination.pageIndex, table.getState().pagination.pageSize, sortColumns);
+                if (enableRowSelection) table.toggleAllRowsSelected(false);
                 setResponseData(responseData)
             } catch (err) {
                 console.log('Error occured when fetching data');
             }
         })();
-    }, [pageIndex, pageSize])
+    }, [table.getState().pagination.pageIndex, table.getState().pagination.pageSize])
 
     React.useEffect(() => {
         if (!isSortingChanged) return;
@@ -137,12 +150,12 @@ export default function AdminUserTable({ getAdminUsers, saveColumnConfig }: {
             sortColumns
         });
 
-        if (columnConfig === null) return;
+        if (tableConfig === null) return;
         setIsSortingChanged(false);
 
         (async () => {
             try {
-                const responseData = await getAdminUsers(pageIndex, pageSize, sortColumns);
+                const responseData = await getAdminUsers(table.getState().pagination.pageIndex, table.getState().pagination.pageSize, sortColumns);
                 setResponseData(responseData)
             } catch (err) {
                 console.log('Error occured when fetching data');
@@ -152,26 +165,23 @@ export default function AdminUserTable({ getAdminUsers, saveColumnConfig }: {
     }, [isSortingChanged])
 
     React.useEffect(() => {
-        if (columnConfig !== null) return;
+        if (tableConfig !== null) return;
         console.log({
             component: "adminusertable.useffect.settingcolumnconfig",
 
         });
         (async () => {
             try {
-                const responseData = await getColumnConfig();
-
-                setColumnSequence(table, responseData.data)
-                table.setColumnVisibility(getColumnVisibilityState(responseData.data))
-                table.setSorting(getColumnSortingState(responseData.data))
-                setIsSortingChanged(true);
-                setColumnConfig(responseData.data || { hidden: [], sort: [], sequence: [] })
+                const responseData = await getTableConfig();
+                const tableConfig = initializeTableState(table, responseData.data)
+                setTableConfig(tableConfig)
+                setIsSortingChanged(true)
             } catch (err) {
                 console.log({ err, message: 'Error occured when fetching data from column config' });
             }
         })();
 
-    }, [columnConfig === null])
+    }, [tableConfig === null])
 
 
     return (

@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/select"
 
 import { FormInput, FormInputHandle } from "@/components/customui/forminput"
-import { useRef } from 'react'
+import React, { useRef } from 'react'
 import { App as AppConstants } from "@/lib/types/constants"
 interface DataTablePaginationProps<TData> {
     table: Table<TData>
@@ -29,11 +29,6 @@ export function DataTablePagination<TData>({
 }: DataTablePaginationProps<TData>) {
 
     const refPageNumber = useRef<FormInputHandle>();
-
-    console.log({
-        component: "datapagination!start",
-    })
-
 
     function onPageNumberChange(value: string) {
         if (!value.length) return;
@@ -52,7 +47,6 @@ export function DataTablePagination<TData>({
 
     function onPageNumberReset() {
         table.setPageIndex(0);
-        setInputPageNumber(0);
     }
 
     function onPageNumberBlur() {
@@ -74,6 +68,12 @@ export function DataTablePagination<TData>({
         refPageNumber?.current?.setValue((newPageIndex + 1).toString())
     }
 
+    React.useEffect(() => {
+        if (refPageNumber?.current?.getValue() !== (table.getState().pagination.pageIndex + 1).toString()) {
+            setInputPageNumber(table.getState().pagination.pageIndex)
+        }
+    }, [table.getState().pagination.pageIndex]);
+
     return (
         <div className="flex flex-wrap items-end justify-end px-0.5">
             <div className="items-end px-2">
@@ -84,12 +84,12 @@ export function DataTablePagination<TData>({
                         table.setPageSize(Number(value))
                     }}
                 >
-                    <SelectTrigger className="h-8 ms-0 px-1">
+                    <SelectTrigger className="h-8 ms-0 px-1 hover:border-2">
                         <SelectValue placeholder={table.getState().pagination.pageSize} />
                     </SelectTrigger>
                     <SelectContent side="top">
                         {AppConstants.Pagination.pageSizeRange.map((pageSize) => (
-                            <SelectItem key={pageSize} value={`${pageSize}`}>
+                            <SelectItem key={pageSize} value={`${pageSize}`} className="hover:border-2">
                                 {pageSize}
                             </SelectItem>
                         ))}
@@ -99,8 +99,8 @@ export function DataTablePagination<TData>({
             <div className="flex flex-wrap items-end space-x-2">
                 <Button
                     variant="outline"
-                    className="flex h-8 items-center justify-between px-1 mt-1"
-                    onClick={() => { table.setPageIndex(0), setInputPageNumber(0) }}
+                    className="flex h-8 items-center justify-between px-1 mt-1  hover:border-2"
+                    onClick={() => { table.setPageIndex(0) }}
                     disabled={!table.getCanPreviousPage()}
                 >
                     <DoubleArrowLeftIcon className="my-auto h-4 w-4" />
@@ -108,10 +108,9 @@ export function DataTablePagination<TData>({
                 </Button>
                 <Button
                     variant="outline"
-                    className="h-8 w-8 p-0 mt-1"
+                    className="h-8 w-8 p-0 mt-1 hover:border-2"
                     onClick={() => {
                         table.previousPage();
-                        setInputPageNumber(table.getState().pagination.pageIndex - 1)
                     }}
                     disabled={!table.getCanPreviousPage()}
                 >
@@ -122,10 +121,9 @@ export function DataTablePagination<TData>({
                 </div>
                 <Button
                     variant="outline"
-                    className="h-8 w-8 p-0 mt-1"
+                    className="h-8 w-8 p-0 mt-1  hover:border-2"
                     onClick={() => {
                         table.nextPage();
-                        setInputPageNumber(table.getState().pagination.pageIndex + 1)
                     }}
                     disabled={!table.getCanNextPage()}
                 >
@@ -133,10 +131,9 @@ export function DataTablePagination<TData>({
                 </Button>
                 <Button
                     variant="outline"
-                    className="flex h-8 items-center justify-between px-1 mt-1"
+                    className="flex h-8 items-center justify-between px-1 mt-1  hover:border-2"
                     onClick={() => {
                         table.setPageIndex(table.getPageCount() - 1);
-                        setInputPageNumber(table.getPageCount() - 1);
                     }}
                     disabled={!table.getCanNextPage()}>
                     <span className="pe-1 mt-1">{table.getPageCount()}</span>

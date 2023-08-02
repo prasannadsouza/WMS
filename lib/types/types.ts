@@ -29,7 +29,7 @@ export interface SortColumn {
     index: number
 }
 
-export interface ColumnConfig {
+export interface TableConfig {
     hidden: {
         column: string
     }[],
@@ -37,7 +37,10 @@ export interface ColumnConfig {
         column: string,
         index: number
     }[],
-    sort: SortColumn[]
+    sort: SortColumn[],
+    pagination: {
+        recordsPerPage: number
+    }
 }
 
 export function getResponseData<T>() {

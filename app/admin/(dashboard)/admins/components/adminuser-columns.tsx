@@ -42,121 +42,143 @@ import {
 } from "@/components/ui/dropdown-menu"
 
 import { AppUser } from "@/lib/types/admin/types"
-import { DataTableColumnHeader } from "@/components/customui/datatable-columnheader"
-import { ColumnMeta } from "@/components/customui/datatable-extensions"
+import { DataTableColumnHeader, GetDataTableRowSelectionColumn } from "@/components/customui/datatable-columnheader"
+import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
 
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>
 }
 
+export const AdminUserConstants =
+{
+    id: "id",
+    firstName: "firstName",
+    lastName: "lastName",
+    email: "email",
+    enabled: "enabled"
+}
 
-export const adminUserColumns: ColumnDef<AppUser>[] = [
-    {
-        accessorKey: "id",
-        enableSorting: true,
-        enableHiding: false,
-        meta: {
-            title: "Id"
-        } as ColumnMeta,
-        header: ({ table, column }) => (
-            <DataTableColumnHeader table={table} column={column} title="Id" />
-        ),
+export function GetAdminUserColumns<AppUser>(enableRowSelection?: boolean, enableMultiRowSelection?: boolean, showActions?: boolean) {
+    let columns: ColumnDef<AppUser>[] = [
+        {
+            id: AdminUserConstants.id,
+            accessorKey: AdminUserConstants.id,
+            enableSorting: true,
+            enableHiding: false,
+            meta: {
+                title: "Id"
+            } as ColumnMeta,
+            header: ({ table, column }) => (
+                <DataTableColumnHeader table={table} column={column} title="Id" />
+            ),
 
-    },
-    {
-        accessorKey: "firstName",
-        enableSorting: true,
-        enableHiding: false,
-        meta: {
-            title: "First Name"
-        } as ColumnMeta,
-        header: ({ table, column }) => (
-            <DataTableColumnHeader table={table} column={column} title="First Name" />
-        ),
-        cell: ({ row }) => {
-            return (
-                <span>
-                    {row.getValue("firstName")}
-                </span>
-            )
         },
+        {
+            id: AdminUserConstants.firstName,
+            accessorKey: AdminUserConstants.firstName,
+            enableSorting: true,
+            enableHiding: false,
+            meta: {
+                title: "First Name"
+            } as ColumnMeta,
+            header: ({ table, column }) => (
+                <DataTableColumnHeader table={table} column={column} title="First Name" />
+            ),
+            cell: ({ row }) => {
+                return (
+                    <span>
+                        {row.getValue(AdminUserConstants.firstName)}
+                    </span>
+                )
+            },
 
-    },
-    {
-        accessorKey: "lastName",
-        enableSorting: true,
-        enableHiding: false,
-        meta: {
-            title: "Last Name"
-        } as ColumnMeta,
-        header: ({ table, column }) => (
-            <DataTableColumnHeader table={table} column={column} title="Last Name " />
-        ),
-        cell: ({ row }) => {
-            return (
-                <span>
-                    {row.getValue("lastName")}
-                </span>
-            )
         },
+        {
+            id: AdminUserConstants.lastName,
+            accessorKey: AdminUserConstants.lastName,
+            enableSorting: true,
+            enableHiding: false,
+            meta: {
+                title: "Last Name"
+            } as ColumnMeta,
+            header: ({ table, column }) => (
+                <DataTableColumnHeader table={table} column={column} title="Last Name " />
+            ),
+            cell: ({ row }) => {
+                return (
+                    <span>
+                        {row.getValue(AdminUserConstants.lastName)}
+                    </span>
+                )
+            },
 
-    },
-    {
-        accessorKey: "email",
-        enableSorting: true,
-        enableHiding: true,
-        meta: {
-            title: "Email"
-        } as ColumnMeta,
-        header: ({ table, column }) => (
-            <DataTableColumnHeader table={table} column={column} />
-        ),
-        cell: ({ row }) => {
-            return (
-                <span>
-                    {row.getValue("email")}
-                </span>
-            )
         },
+        {
+            id: AdminUserConstants.email,
+            accessorKey: AdminUserConstants.email,
+            enableSorting: true,
+            enableHiding: true,
+            meta: {
+                title: "Email"
+            } as ColumnMeta,
+            header: ({ table, column }) => (
+                <DataTableColumnHeader table={table} column={column} />
+            ),
+            cell: ({ row }) => {
+                return (
+                    <span>
+                        {row.getValue(AdminUserConstants.email)}
+                    </span>
+                )
+            },
 
-        filterFn: (row, id, value) => {
-            return value.includes(row.getValue(id))
+            filterFn: (row, id, value) => {
+                return value.includes(row.getValue(id))
+            },
         },
-    },
-    {
-        accessorKey: "enabled",
-        enableSorting: true,
-        enableHiding: true,
-        meta: {
-            title: "Enabled"
-        } as ColumnMeta,
-        header: ({ table, column }) => (
-            <DataTableColumnHeader table={table} column={column} />
-        ),
-        cell: ({ row }) => {
-            return (
-                <span>
-                    {row.getValue("enabled") ? "Yes" : "No"}
-                </span>
-            )
-        },
-        filterFn: (row, id, value) => {
-            return value.includes(row.getValue(id))
-        },
-    },
-    {
-        id: "actions",
-        enableSorting: false,
-        enableHiding: false,
-        meta: {
-            title: "Actions"
-        } as ColumnMeta,
-        cell: ({ row }) => <DataTableRowActions row={row} />,
-    },
-]
+        {
+            id: AdminUserConstants.enabled,
+            accessorKey: AdminUserConstants.enabled,
+            enableSorting: true,
+            enableHiding: true,
+            meta: {
+                title: "Enabled"
+            } as ColumnMeta,
+            header: ({ table, column }) => (
+                <DataTableColumnHeader table={table} column={column} />
+            ),
+            cell: ({ row }) => {
+                return (
+                    <span>
+                        {row.getValue(AdminUserConstants.enabled) ? "Yes" : "No"}
+                    </span>
+                )
+            },
+            filterFn: (row, id, value) => {
+                return value.includes(row.getValue(id))
+            },
+        },]
+
+    if (showActions) {
+        columns.push(
+            {
+                id: DataTableConstants.actions,
+                enableSorting: false,
+                enableHiding: false,
+                meta: {
+                    title: "Actions"
+                } as ColumnMeta,
+                cell: ({ row }) => <DataTableRowActions row={row} />,
+            })
+    }
+
+    if (enableRowSelection || enableMultiRowSelection) columns.splice(0, 0, GetDataTableRowSelectionColumn(enableMultiRowSelection))
+
+    return columns;
+}
 
 
-export function DataTableRowActions<TData>({
+function DataTableRowActions<TData>({
     row,
 }: DataTableRowActionsProps<TData>) {
     const user = row.original as AppUser

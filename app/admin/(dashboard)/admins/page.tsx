@@ -16,7 +16,7 @@ export default function AdminHome() {
 
     return (
         <div className='pb-2'>
-            <AdminUsers />
+            <AdminUsers showActions={true} enableRowSelection={true} enableMultiRowSelection={true} />
         </div>
 
     );

@@ -8,7 +8,7 @@ import { App as AppConstants } from "@/lib/types/constants"
 */
 
 import { faker } from "@faker-js/faker"
-import { ResponseData, ColumnConfig, SortColumn } from "@/lib/types/types"
+import { ResponseData, TableConfig, SortColumn } from "@/lib/types/types"
 import { AppUser } from "@/lib/types/admin/types"
 import { App as AppConstants } from "@/lib/types/constants"
 
@@ -22,7 +22,7 @@ export async function getAdminUsers(page: number, pageSize: number, sortColumn: 
         errors: [],
         pagination: {
             page: page,
-            totalRecords: 1000,
+            totalRecords: (pageSize * 1000),
             recordsPerPage: pageSize,
             sortColumns: [],
         }
@@ -57,24 +57,27 @@ export async function getAdminUsers(page: number, pageSize: number, sortColumn: 
     return responseData;
 }
 
-export async function saveColumnConfig(saveForAll: boolean) {
+export async function saveTableConfig(saveForAll: boolean) {
     console.log({
-        component: "admins.data.ts.saveColumnConfig",
+        component: "admins.data.ts.saveTableConfig",
         saveForAll
     })
 }
 
-export async function getColumnConfig() {
+export async function getTableConfig() {
 
     console.log({
-        component: "admins.data.ts.getColumnConfig",
+        component: "admins.data.ts.getTableConfig",
     })
-    let responseData: ResponseData<ColumnConfig> = {
+    let responseData: ResponseData<TableConfig> = {
         data: {
             hidden: [{ column: "email" }],
-            sequence: [{ column: "enabled", index: 0 }, { column: "actions", index: 1 }, { column: "lastName", index: 2 }, { column: "firstName", index: 4 }],
+            sequence: [{ column: "enabled", index: 1 }, { column: "actions", index: 2 }, { column: "lastName", index: 4 }, { column: "firstName", index: 4 }],
             sort: [{ column: "enabled", index: 0, descending: false }, { column: "firstName", index: 1, descending: true }
-            ]
+            ],
+            pagination: {
+                recordsPerPage: 20,
+            }
         },
         errors: null
     }
@@ -82,5 +85,5 @@ export async function getColumnConfig() {
 }
 
 export type getAdminUsersType = typeof getAdminUsers
-export type saveColumnConfigType = typeof saveColumnConfig
-export type getColumnConfigType = typeof getColumnConfig
+export type saveTableConfigType = typeof saveTableConfig
+export type getTableConfigType = typeof getTableConfig

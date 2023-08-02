@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-
+import { Checkbox } from "@/components/ui/checkbox"
 import { ColumnMeta } from "@/components/customui/datatable-extensions"
 
   */
@@ -17,8 +17,10 @@ import {
     ArrowUpIcon,
     CaretSortIcon,
     EyeNoneIcon,
+    CheckboxIcon,
 } from "@radix-ui/react-icons"
-import { Column, Table as TablePrimitive } from "@tanstack/react-table"
+import { Column, Table as TablePrimitive, ColumnDef } from "@tanstack/react-table"
+
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -29,8 +31,9 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Checkbox } from "@/components/ui/checkbox"
 
-import { ColumnMeta, getTableMeta } from "@/components/customui/datatable-extensions"
+import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
 
 interface DataTableColumnHeaderProps<TData, TValue>
     extends React.HTMLAttributes<HTMLDivElement> {
@@ -99,4 +102,43 @@ export function DataTableColumnHeader<TData, TValue>({
             </DropdownMenu>
         </div>
     )
+}
+
+export function GetDataTableRowSelectionColumn<TData>(enableMultiRowSelection?: boolean) {
+    return {
+        id: DataTableConstants.select,
+        enableSorting: false,
+        enableHiding: false,
+        meta: {
+            title: "Select"
+        } as ColumnMeta,
+        header: ({ table }) => {
+            if (!enableMultiRowSelection) return <div className="flex align-middle justify-center"><CheckboxIcon className="h-6 w-6" /></div>
+            return (<div className="flex align-middle justify-center" ><Checkbox
+                onCheckedChange={(value: any) =>
+                    table.toggleAllRowsSelected(!!value)
+                }
+                className="h-6 w-6" checked={table.getIsAllRowsSelected()} >
+            </Checkbox></div>)
+        },
+        cell: ({ row, table }) => {
+            return (<div className="flex align-middle justify-center">
+                <Checkbox checked={row.getIsSelected()}
+                    onCheckedChange={(value: any) => {
+                        if (value && !enableMultiRowSelection) {
+                            table.getSelectedRowModel().rows.map((a) => {
+                                a.toggleSelected(false);
+                            })
+                        }
+
+                        row.toggleSelected(!!value)
+                    }
+                    }
+                    className="h-6 w-6">
+                </Checkbox>
+            </div>
+            )
+        },
+
+    } as ColumnDef<TData>
 }

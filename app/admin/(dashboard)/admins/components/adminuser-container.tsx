@@ -4,27 +4,39 @@
 */
 
 import AdminUserTable from "./adminuser-table"
-import { getAdminUsers as serverGetAdminUsers, getColumnConfig as serverGetColumnConfig, saveColumnConfig as serverSaveColumnConfig } from "../data";
+import { getAdminUsers as serverGetAdminUsers, getTableConfig as serverGetTableConfig, saveTableConfig as serverSaveTableConfig } from "../data";
 import { SortColumn } from "@/lib/types/types"
 
-export default function AdminUsers() {
+export default function AdminUsers(
+    { enableRowSelection,
+        enableMultiRowSelection,
+        showActions }:
+        {
+            enableRowSelection?: boolean,
+            enableMultiRowSelection?: boolean
+            showActions?: boolean
+        }) {
 
     async function getAdminUsers(pageIndex: number, pageSize: number, sortColumn: SortColumn[]) {
         'use server'
         return await serverGetAdminUsers(pageIndex, pageSize, sortColumn)
     }
 
-    async function saveColumnConfig(saveForAll: boolean) {
+    async function saveTableConfig(saveForAll: boolean) {
         'use server'
-        await serverSaveColumnConfig(saveForAll)
+        await serverSaveTableConfig(saveForAll)
     }
 
-    async function getColumnConfig() {
+    async function getTableConfig() {
         'use server'
-        return await serverGetColumnConfig()
+        return await serverGetTableConfig()
     }
 
     return (<AdminUserTable getAdminUsers={getAdminUsers}
-        getColumnConfig={getColumnConfig}
-        saveColumnConfig={saveColumnConfig}  ></AdminUserTable>)
+        getTableConfig={getTableConfig}
+        saveTableConfig={saveTableConfig}
+        enableRowSelection={enableRowSelection}
+        enableMultiRowSelection={enableMultiRowSelection}
+        showActions={showActions}
+    ></AdminUserTable>)
 }
