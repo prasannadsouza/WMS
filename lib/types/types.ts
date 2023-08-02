@@ -33,14 +33,16 @@ export interface TableConfig {
     hidden: {
         column: string
     }[],
-    sequence: {
-        column: string,
-        index: number
-    }[],
+    sequence: ColumnSequence[],
     sort: SortColumn[],
     pagination: {
         recordsPerPage: number
     }
+}
+
+export interface ColumnSequence {
+    column: string,
+    index: number
 }
 
 export function getResponseData<T>() {

@@ -18,14 +18,15 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { DataTablePagination } from "@/components/customui/datatable-pagination"
-import { ChevronDown } from "lucide-react";
-import useStickyHeader, { getColumnTitle, getTableMeta } from "@/components/customui/datatable-extensions"
+
+import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 */
 
 import * as React from "react"
+import { ChevronDown } from "lucide-react";
 import { Column, ColumnSort, flexRender, Table as TablePrimitive } from "@tanstack/react-table"
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretSortIcon, CaretUpIcon, CheckboxIcon, Cross2Icon, DotsHorizontalIcon } from "@radix-ui/react-icons"
 
@@ -47,8 +48,8 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { DataTablePagination } from "@/components/customui/datatable-pagination"
-import { ChevronDown } from "lucide-react";
-import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState } from "@/components/customui/datatable-extensions"
+
+import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -62,6 +63,8 @@ export function DataTable<T>({
     const { tableRef, isSticky } = useStickyHeader();
 
     const [saveTableConfigForAll, setSaveTableConfigForAll] = React.useState(false)
+    const [loadSavedTableConfigForAll, setLoadSavedTableConfigForAll] = React.useState(false)
+    const [deleteSavedTableConfigForAll, setDeleteSavedTableConfigForAll] = React.useState(false)
     const tableMeta = getTableMeta(table)
 
     const renderHeader = () => {
@@ -142,18 +145,47 @@ export function DataTable<T>({
                                 </DropdownMenuSubContent>
                             </DropdownMenuSub>
                             <DropdownMenuSeparator />
-                            <div className="flex items-center space-x-1">
-                                <Button onClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, saveTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2")} >Save</Button>
-                                <div className="flex items-center p-1 rounded hover:border-2"  >
-                                    <Checkbox onCheckedChange={(value: any) =>
-                                        setSaveTableConfigForAll(value)
-                                    } className="h-6 w-6" id={"cbsaveconfigforall" + id} ></Checkbox>
-                                    <label className="ps-1 grow" htmlFor={"cbsaveconfigforall" + id} >For All</label>
-                                </div>
+                            <DropdownMenuSub>
+                                <DropdownMenuSubTrigger className="hover:border-2">
+                                    Config
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                    <div className="flex items-center justify-between space-x-1">
+                                        <Button onClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, getTableConfig(table), saveTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Save</Button>
+                                        <div className="flex items-center p-1 rounded hover:border-2"  >
+                                            <Checkbox onCheckedChange={(value: any) =>
+                                                setSaveTableConfigForAll(value)
+                                            } className="h-6 w-6" id={"cbsaveconfigforall" + id} ></Checkbox>
+                                            <label className="ps-1 grow" htmlFor={"cbsaveconfigforall" + id} >For All</label>
+                                        </div>
 
-                            </div>
+                                    </div>
+                                    <DropdownMenuSeparator />
+                                    <div className="flex items-center justify-between space-x-1">
+                                        <Button onClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, deleteSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Delete</Button>
+                                        <div className="flex items-center p-1 rounded hover:border-2"  >
+                                            <Checkbox onCheckedChange={(value: any) =>
+                                                setDeleteSavedTableConfigForAll(value)
+                                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
+                                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
+                                        </div>
+
+                                    </div>
+                                    <DropdownMenuSeparator />
+                                    <div className="flex items-center justify-between space-x-1">
+                                        <Button onClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, loadSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Load</Button>
+                                        <div className="flex items-center p-1 rounded hover:border-2"  >
+                                            <Checkbox onCheckedChange={(value: any) =>
+                                                setLoadSavedTableConfigForAll(value)
+                                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
+                                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
+                                        </div>
+                                    </div>
+
+                                </DropdownMenuSubContent>
+                            </DropdownMenuSub>
                             <DropdownMenuSeparator />
-                            <div className="flex items-center space-x-1">
+                            <div className="flex items-center justify-center space-x-1">
                                 <Button onClick={() => {
                                     if (!tableMeta?.tableConfig) return;
                                     initializeTableState(table, tableMeta!.tableConfig)

@@ -1,12 +1,13 @@
 /*
-  import  AdminUserTable from "./adminuser-table"
-  import { getAdminUsers } from "../data";
+import AdminUserTable from "./adminuser-table"
+import { getAdminUsers as serverGetAdminUsers, getTableConfig as serverGetTableConfig, saveTableConfig as serverSaveTableConfig, deleteSavedTableConfig as serverDeleteSavedTableConfig } from "../data";
+import { SortColumn, TableConfig } from "@/lib/types/types"
 */
 
 import AdminUserTable from "./adminuser-table"
-import { getAdminUsers as serverGetAdminUsers, getTableConfig as serverGetTableConfig, saveTableConfig as serverSaveTableConfig } from "../data";
-import { SortColumn } from "@/lib/types/types"
-
+import { getAdminUsers as serverGetAdminUsers, getTableConfig as serverGetTableConfig, saveTableConfig as serverSaveTableConfig, deleteSavedTableConfig as serverDeleteSavedTableConfig } from "../data";
+import { SortColumn, TableConfig } from "@/lib/types/types"
+const tableId = "adminusersmainpage";
 export default function AdminUsers(
     { enableRowSelection,
         enableMultiRowSelection,
@@ -22,19 +23,26 @@ export default function AdminUsers(
         return await serverGetAdminUsers(pageIndex, pageSize, sortColumn)
     }
 
-    async function saveTableConfig(saveForAll: boolean) {
+    async function saveTableConfig(tableId: string, tableConfig: TableConfig, saveForAll: boolean) {
         'use server'
-        await serverSaveTableConfig(saveForAll)
+        await serverSaveTableConfig(tableId, tableConfig, saveForAll)
     }
 
-    async function getTableConfig() {
+    async function deleteSavedTableConfig(tableId: string, deleteForAll: boolean) {
         'use server'
-        return await serverGetTableConfig()
+        await serverDeleteSavedTableConfig(tableId, deleteForAll)
+    }
+
+    async function getTableConfig(tableId: string, forAll: boolean, forceGetForAll: boolean) {
+        'use server'
+        return await serverGetTableConfig(tableId, forAll, forceGetForAll)
     }
 
     return (<AdminUserTable getAdminUsers={getAdminUsers}
+        tableId={tableId}
         getTableConfig={getTableConfig}
         saveTableConfig={saveTableConfig}
+        deleteSavedTableConfig={deleteSavedTableConfig}
         enableRowSelection={enableRowSelection}
         enableMultiRowSelection={enableMultiRowSelection}
         showActions={showActions}

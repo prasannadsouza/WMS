@@ -1,5 +1,6 @@
 /*
-  import { ColumnConfig } from "@/lib/types/types";
+import { TableConfig } from "@/lib/types/types";
+import { App as AppConstants } from "@/lib/types/constants"
  */
 
 import { useState, useEffect, useRef, useCallback } from "react";
@@ -52,8 +53,11 @@ export interface ColumnMeta {
 }
 
 export interface TableMeta<T> {
+    id: string
     sortChanged?: () => void
-    saveTableConfig?: (table: TablePrimitive<T>, saveForAll: boolean) => void
+    saveTableConfig?: (table: TablePrimitive<T>, tableConfig: TableConfig, saveForAll: boolean) => void
+    deleteSavedTableConfig?: (table: TablePrimitive<T>, deleteForAll: boolean) => void
+    loadSavedTableConfig?: (table: TablePrimitive<T>, forAll: boolean) => void
     tableConfig?: TableConfig | null
 }
 
@@ -69,9 +73,9 @@ export function getTableMeta<T>(table: TablePrimitive<T>) {
     return table.options.meta as TableMeta<T>;
 }
 
-export function getColumnVisibilityState(columnConfig: TableConfig | null) {
+export function getColumnVisibilityState(tableConfig: TableConfig | null) {
     let visibilityState: VisibilityState = {}
-    columnConfig?.hidden?.forEach((col) => {
+    tableConfig?.hidden?.forEach((col) => {
         visibilityState[col.column] = false;
     })
     return visibilityState;
@@ -99,7 +103,7 @@ export function getColumnSortingState(columnConfig: TableConfig | null) {
     return sortingState;
 }
 
-export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: TableConfig | null) {
+export function setColumnSequence<T>(table: TablePrimitive<T>, tableConfig: TableConfig | null) {
 
     const allColumns = table.getAllColumns();
     const columnSequence = allColumns.map((col, index) => {
@@ -108,7 +112,7 @@ export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: Tab
         }
     })
 
-    columnConfig?.sequence?.sort((a, b) => {
+    tableConfig?.sequence?.sort((a, b) => {
         const valueA = a.index;
         const valueB = b.index;
         if (valueA < valueB) {
@@ -120,7 +124,7 @@ export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: Tab
         return 0;
     });
 
-    columnConfig?.sequence?.forEach((configSequence) => {
+    tableConfig?.sequence?.forEach((configSequence) => {
         let currentSequence = columnSequence?.find((a) => a.col.id == configSequence.column);
         if (!currentSequence) return;
 
@@ -156,20 +160,20 @@ export function setColumnSequence<T>(table: TablePrimitive<T>, columnConfig: Tab
 
 }
 
-export function initializeTableState<T>(table: TablePrimitive<T>, columnConfig: TableConfig | null) {
+export function initializeTableState<T>(table: TablePrimitive<T>, tableConfig: TableConfig | null) {
     const tableMeta = getTableMeta(table)
     let recordsPerPage = Math.min(...AppConstants.Pagination.pageSizeRange);
-    setColumnSequence(table, columnConfig)
+    setColumnSequence(table, tableConfig)
 
-    table.setColumnVisibility(getColumnVisibilityState(columnConfig))
-    table.setSorting(getColumnSortingState(columnConfig))
-    if (columnConfig?.pagination?.recordsPerPage) recordsPerPage = columnConfig.pagination.recordsPerPage
+    table.setColumnVisibility(getColumnVisibilityState(tableConfig))
+    table.setSorting(getColumnSortingState(tableConfig))
+    if (tableConfig?.pagination?.recordsPerPage) recordsPerPage = tableConfig.pagination.recordsPerPage
     table.setPageSize(recordsPerPage)
 
     tableMeta?.sortChanged && tableMeta?.sortChanged();
     return {
-        sort: columnConfig?.sort || [],
-        hidden: columnConfig?.hidden || [],
+        sort: tableConfig?.sort || [],
+        hidden: tableConfig?.hidden || [],
         sequence: table.getAllColumns().map((column, index) => ({
             column: column.id,
             index: index,
@@ -178,6 +182,32 @@ export function initializeTableState<T>(table: TablePrimitive<T>, columnConfig: 
             recordsPerPage
         }
     } as TableConfig
+}
+
+export function getTableConfig<T>(table: TablePrimitive<T>) {
+    const tableConfig: TableConfig = {
+        sequence: table.getAllColumns().map((column, index) => ({
+            column: column.id,
+            index: index,
+        })),
+        sort: table.getState().sorting.map((column, index) => {
+            return {
+                column: column.id,
+                descending: column.desc,
+                index: index,
+            }
+        }),
+        hidden: table.getAllColumns().filter((column) => !column.getIsVisible()).map((column) => {
+            return {
+                column: column.id
+            }
+        }),
+        pagination: {
+            recordsPerPage: table.getState().pagination.pageSize,
+        }
+    }
+
+    return tableConfig;
 }
 
 export const DataTableConstants = {

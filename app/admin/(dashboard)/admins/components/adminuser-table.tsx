@@ -2,59 +2,56 @@
 /*
 import { DataTable } from "@/components/customui/datatable";
 import { AppUser } from "@/lib/types/admin/types";
-import { adminUserColumns } from "../components/adminuser-columns"
-import { ColumnConfig, getResponseData } from "@/lib/types/types";
-import { getAdminUsersType, saveColumnConfigType, getColumnConfigType, getColumnConfig } from "../data"
+import { getTableColumns, getDefaultTableConfig } from "../components/adminuser-columns"
+import { TableConfig, getResponseData, SortColumn } from "@/lib/types/types";
+import { typeGetAdminUsers, typeSaveTableConfig, typeGetTableConfig, typeDeleteSavedTableConfig } from "../data"
 import { App as AppConstants } from "@/lib/types/constants"
-import { TableMeta, getColumnSortingState, getColumnVisibilityState, setColumnSequence } from "@/components/customui/datatable-extensions";
+import { TableMeta, initializeTableState, getTableMeta } from "@/components/customui/datatable-extensions";
 
 */
 
 import { DataTable } from "@/components/customui/datatable";
 import { AppUser } from "@/lib/types/admin/types";
-import { GetAdminUserColumns } from "../components/adminuser-columns"
+import { getTableColumns, getDefaultTableConfig } from "../components/adminuser-columns"
 import { TableConfig, getResponseData, SortColumn } from "@/lib/types/types";
-import { getAdminUsersType, saveTableConfigType, getTableConfigType } from "../data"
+import { typeGetAdminUsers, typeSaveTableConfig, typeGetTableConfig, typeDeleteSavedTableConfig } from "../data"
 import { App as AppConstants } from "@/lib/types/constants"
-import { TableMeta, initializeTableState } from "@/components/customui/datatable-extensions";
+import { TableMeta, initializeTableState, getTableMeta } from "@/components/customui/datatable-extensions";
 
 import React from 'react'
-import { PaginationState, Table as TablePrimitive } from '@tanstack/react-table'
 import {
     ColumnFiltersState,
     getCoreRowModel,
     getFacetedRowModel,
     getFacetedUniqueValues,
     getFilteredRowModel,
-    getPaginationRowModel,
     getSortedRowModel,
     useReactTable,
+    Table as TablePrimitive
+
 } from "@tanstack/react-table"
 
 export default function AdminUserTable({
+    tableId,
     getAdminUsers,
     getTableConfig,
     saveTableConfig,
+    deleteSavedTableConfig,
     enableRowSelection,
     enableMultiRowSelection,
     showActions }: {
-        getAdminUsers: getAdminUsersType,
-        getTableConfig: getTableConfigType,
-        saveTableConfig?: saveTableConfigType,
+        tableId: string,
+        getAdminUsers: typeGetAdminUsers,
+        getTableConfig: typeGetTableConfig,
+        saveTableConfig?: typeSaveTableConfig,
+        deleteSavedTableConfig?: typeDeleteSavedTableConfig
         enableRowSelection?: boolean,
         enableMultiRowSelection?: boolean
         showActions?: boolean
     }) {
 
     const [responseData, setResponseData] = React.useState(getResponseData<AppUser>());
-    const mainColumns = React.useMemo(() => GetAdminUserColumns(enableRowSelection, enableMultiRowSelection, showActions), [])
-
-    // const [{ pageIndex, pageSize }, setPagination] =
-    //     React.useState<PaginationState>({
-    //         pageIndex: 0,
-    //         pageSize: Math.min(...AppConstants.Pagination.pageSizeRange),
-    //     })
-
+    const mainColumns = React.useMemo(() => getTableColumns(enableRowSelection, enableMultiRowSelection, showActions), [])
     const [rowSelection, setRowSelection] = React.useState({})
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [isSortingChanged, setIsSortingChanged] = React.useState(false)
@@ -66,19 +63,13 @@ export default function AdminUserTable({
         state: {
             rowSelection,
             columnFilters,
-            // pagination: {
-            //     pageIndex: pageIndex,
-            //     pageSize: pageSize,
-            // }
         },
         enableRowSelection,
         enableMultiRowSelection,
         onRowSelectionChange: setRowSelection,
-        //onPaginationChange: setPagination,
         onColumnFiltersChange: setColumnFilters,
         getCoreRowModel: getCoreRowModel(),
         getFilteredRowModel: getFilteredRowModel(),
-        //getPaginationRowModel: getPaginationRowModel(),
         getSortedRowModel: getSortedRowModel(),
         getFacetedRowModel: getFacetedRowModel(),
         getFacetedUniqueValues: getFacetedUniqueValues(),
@@ -93,6 +84,7 @@ export default function AdminUserTable({
             }
         },
         meta: {
+            id: tableId,
             sortChanged: () => {
                 if (tableConfig === null) return;
                 setIsSortingChanged(true);
@@ -100,15 +92,34 @@ export default function AdminUserTable({
                     component: "admintable.customsorting change"
                 })
             },
-            saveTableConfig: async (table: TablePrimitive<AppUser>, saveForAll: boolean) => {
-                //const tableConfig: TableConfig = {
-
-                //}
+            saveTableConfig: async (table: TablePrimitive<AppUser>, tableConfig: TableConfig, saveForAll: boolean) => {
                 console.log({
                     component: "admintable.saveTableConfig",
                     saveForAll,
                 })
-                saveTableConfig && await saveTableConfig(saveForAll);
+                saveTableConfig && await saveTableConfig(getTableMeta(table).id, tableConfig, saveForAll);
+            },
+            deleteSavedTableConfig: async (table: TablePrimitive<AppUser>, deleteForAll: boolean) => {
+                console.log({
+                    component: "admintable.deleteTableConfig",
+                    deleteForAll,
+                })
+                deleteSavedTableConfig && await deleteSavedTableConfig(getTableMeta(table).id, deleteForAll);
+                let tableConfig = initializeTableState(table, getDefaultTableConfig())
+                setTableConfig(tableConfig)
+                setIsSortingChanged(true)
+            },
+            loadSavedTableConfig: async (table: TablePrimitive<AppUser>, forAll: boolean) => {
+                console.log({
+                    component: "admintable.loadTableConfig",
+                    forAll,
+                })
+                const responseData = await getTableConfig(getTableMeta(table).id, forAll, false);
+                let tableConfig = responseData.data;
+                if (!tableConfig) tableConfig = getDefaultTableConfig()
+                tableConfig = initializeTableState(table, tableConfig)
+                setTableConfig(tableConfig)
+                setIsSortingChanged(true)
             },
             tableConfig: tableConfig,
         } as TableMeta<AppUser>
@@ -172,8 +183,10 @@ export default function AdminUserTable({
         });
         (async () => {
             try {
-                const responseData = await getTableConfig();
-                const tableConfig = initializeTableState(table, responseData.data)
+                const responseData = await getTableConfig(tableId, false, true);
+                let tableConfig = responseData.data;
+                if (!tableConfig) tableConfig = getDefaultTableConfig()
+                tableConfig = initializeTableState(table, tableConfig)
                 setTableConfig(tableConfig)
                 setIsSortingChanged(true)
             } catch (err) {

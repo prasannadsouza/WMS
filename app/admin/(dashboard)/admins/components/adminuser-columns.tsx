@@ -4,7 +4,7 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons"
 import { Row, ColumnDef } from "@tanstack/react-table"
 
 /*
-  import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button"
 
 import {
     DropdownMenu,
@@ -18,11 +18,13 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-    } from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu"
 
-
-    import { userSchema,User } from "../data"
-import { DataTableColumnHeader } from "./adminuser-columnheader"
+import { AppUser } from "@/lib/types/admin/types"
+import { DataTableColumnHeader, GetDataTableRowSelectionColumn } from "@/components/customui/datatable-columnheader"
+import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
+import { TableConfig } from "@/lib/types/types"
+import { App as AppConstants } from "@/lib/types/constants"
     */
 
 import { Button } from "@/components/ui/button"
@@ -44,7 +46,8 @@ import {
 import { AppUser } from "@/lib/types/admin/types"
 import { DataTableColumnHeader, GetDataTableRowSelectionColumn } from "@/components/customui/datatable-columnheader"
 import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
-
+import { TableConfig } from "@/lib/types/types"
+import { App as AppConstants } from "@/lib/types/constants"
 interface DataTableRowActionsProps<TData> {
     row: Row<TData>
 }
@@ -58,7 +61,33 @@ export const AdminUserConstants =
     enabled: "enabled"
 }
 
-export function GetAdminUserColumns<AppUser>(enableRowSelection?: boolean, enableMultiRowSelection?: boolean, showActions?: boolean) {
+export function getDefaultTableConfig() {
+    let tableConfig: TableConfig = {
+        sequence: [],
+        sort: [],
+        hidden: [],
+        pagination: {
+            recordsPerPage: Math.min(...AppConstants.Pagination.pageSizeRange)
+        }
+    }
+
+    let index: number = 0;
+    tableConfig.sequence.push({ column: DataTableConstants.select, index: index++ })
+    tableConfig.sequence.push({ column: AdminUserConstants.id, index: index++ })
+    tableConfig.sequence.push({ column: AdminUserConstants.firstName, index: index++ })
+    tableConfig.sequence.push({ column: AdminUserConstants.lastName, index: index++ })
+    tableConfig.sequence.push({ column: AdminUserConstants.email, index: index++ })
+    tableConfig.sequence.push({ column: AdminUserConstants.enabled, index: index++ })
+    tableConfig.sequence.push({ column: DataTableConstants.actions, index: index++ })
+
+    index = 0
+    tableConfig.sort.push({ column: AdminUserConstants.enabled, descending: false, index: index++ })
+    tableConfig.sort.push({ column: AdminUserConstants.firstName, descending: false, index: index++ })
+
+    return tableConfig;
+}
+
+export function getTableColumns<AppUser>(enableRowSelection?: boolean, enableMultiRowSelection?: boolean, showActions?: boolean) {
     let columns: ColumnDef<AppUser>[] = [
         {
             id: AdminUserConstants.id,

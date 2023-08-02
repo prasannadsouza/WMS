@@ -57,17 +57,29 @@ export async function getAdminUsers(page: number, pageSize: number, sortColumn: 
     return responseData;
 }
 
-export async function saveTableConfig(saveForAll: boolean) {
+export async function saveTableConfig(tableId: string, tableConfig: TableConfig, saveForAll: boolean) {
     console.log({
         component: "admins.data.ts.saveTableConfig",
-        saveForAll
+        tableId,
+        saveForAll,
+        tableConfig
     })
 }
 
-export async function getTableConfig() {
+export async function deleteSavedTableConfig(tableId: string, deleteForAll: boolean) {
+    console.log({
+        component: "admins.data.ts.deleteSavedTableConfig",
+        tableId,
+        deleteForAll
+    })
+}
 
+export async function getTableConfig(tableId: string, forAll: boolean, forceGetForAll: boolean) {
     console.log({
         component: "admins.data.ts.getTableConfig",
+        tableId,
+        forAll,
+        forceGetForAll
     })
     let responseData: ResponseData<TableConfig> = {
         data: {
@@ -76,7 +88,7 @@ export async function getTableConfig() {
             sort: [{ column: "enabled", index: 0, descending: false }, { column: "firstName", index: 1, descending: true }
             ],
             pagination: {
-                recordsPerPage: 20,
+                recordsPerPage: Math.min(...AppConstants.Pagination.pageSizeRange),
             }
         },
         errors: null
@@ -84,6 +96,7 @@ export async function getTableConfig() {
     return responseData
 }
 
-export type getAdminUsersType = typeof getAdminUsers
-export type saveTableConfigType = typeof saveTableConfig
-export type getTableConfigType = typeof getTableConfig
+export type typeGetAdminUsers = typeof getAdminUsers
+export type typeSaveTableConfig = typeof saveTableConfig
+export type typeDeleteSavedTableConfig = typeof deleteSavedTableConfig
+export type typeGetTableConfig = typeof getTableConfig

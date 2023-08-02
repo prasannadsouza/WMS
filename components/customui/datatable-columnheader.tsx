@@ -1,5 +1,5 @@
 /*
- import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
@@ -9,8 +9,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ColumnMeta } from "@/components/customui/datatable-extensions"
 
+import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
   */
 import {
     ArrowDownIcon,
@@ -59,7 +59,7 @@ export function DataTableColumnHeader<TData, TValue>({
                     <Button
                         variant="ghost"
                         size="sm"
-                        className="-ml-3 h-8 data-[state=open]:bg-accent hover:border-2"
+                        className="px-1 h-8 data-[state=open]:bg-accent hover:border-2"
                     >
                         <span>{(column.columnDef.meta as ColumnMeta)?.title}</span>
                         {column.getCanSort() && (column.getIsSorted() === "desc" ? (
