@@ -1,10 +1,10 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Column, SortingState, Table as TablePrimitive, VisibilityState } from "@tanstack/react-table"
 /*
 import { TableConfig } from "@/lib/types/types";
 import { App as AppConstants } from "@/lib/types/constants"
  */
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Column, SortingState, Table as TablePrimitive, VisibilityState } from "@tanstack/react-table"
 import { TableConfig } from "@/lib/types/types";
 import { App as AppConstants } from "@/lib/types/constants"
 
@@ -58,7 +58,8 @@ export interface TableMeta<T> {
     saveTableConfig?: (table: TablePrimitive<T>, tableConfig: TableConfig, saveForAll: boolean) => void
     deleteSavedTableConfig?: (table: TablePrimitive<T>, deleteForAll: boolean) => void
     loadSavedTableConfig?: (table: TablePrimitive<T>, forAll: boolean) => void
-    tableConfig?: TableConfig | null
+    tableConfig?: TableConfig | null,
+    isTableForSelectedData: boolean,
 }
 
 export function getColumnTitle<T>(column: Column<T, unknown>) {
@@ -212,5 +213,7 @@ export function getTableConfig<T>(table: TablePrimitive<T>) {
 
 export const DataTableConstants = {
     actions: "actions",
-    select: "select"
+    select: "select",
+    asc: "asc",
+    desc: "desc"
 }

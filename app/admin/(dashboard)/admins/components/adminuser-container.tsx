@@ -7,12 +7,14 @@ import { SortColumn, TableConfig } from "@/lib/types/types"
 import AdminUserTable from "./adminuser-table"
 import { getAdminUsers as serverGetAdminUsers, getTableConfig as serverGetTableConfig, saveTableConfig as serverSaveTableConfig, deleteSavedTableConfig as serverDeleteSavedTableConfig } from "../data";
 import { SortColumn, TableConfig } from "@/lib/types/types"
-const tableId = "adminusersmainpage";
 export default function AdminUsers(
-    { enableRowSelection,
+    {
+        tableId,
+        enableRowSelection,
         enableMultiRowSelection,
         showActions }:
         {
+            tableId: string,
             enableRowSelection?: boolean,
             enableMultiRowSelection?: boolean
             showActions?: boolean

@@ -3,14 +3,13 @@ import { App } from '@/lib/types/constants'
 */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { App } from '@/lib/types/constants'
 export function middleware(request: NextRequest) {
 
-    const authToken = request.cookies.get(App.cookieAuthToken)?.value
+    const authTokens = request.cookies.getAll().map((cookie) => { return { name: cookie.name, value: cookie.value } })
 
     console.log({
         Component: "middleware", url: request.url
-        , authToken: authToken
+        , authTokens
     })
 
     return NextResponse.next()

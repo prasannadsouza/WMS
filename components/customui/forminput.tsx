@@ -1,10 +1,17 @@
 'use client'
+import { X } from "lucide-react"
+import React from 'react';
+/*
+  import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+ */
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
-import { X } from "lucide-react"
-import React from 'react';
+
 
 export interface FormInputProps {
     title: string,
@@ -84,11 +91,6 @@ const FormInput = React.forwardRef((props: FormInputProps, ref) => {
         setModel({ ...model, error: "" });
         if (props.onTextChange) props.onTextChange(value);
     };
-
-    console.log({
-        component: "forminput!render",
-        refValue: refInput?.current?.value,
-    })
 
     return (<div className={props.containerClassName} style={{
         minWidth: props.minWidth,

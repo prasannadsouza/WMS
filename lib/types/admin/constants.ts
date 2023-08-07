@@ -1,9 +1,13 @@
 export const Pages = {
-    root: "/admin",
-    home: "/admin/home"
+    root: "/",
+    home: "home",
+    admins: "admins"
 }
 
 export const App = {
+    orgId: "admin",
     companyName: "WMS Admin",
-    rootTitle: 'WMS'
+    shortName: "WMS Admin",
+    rootTitle: 'WMS',
+    logoURL: "https://jlmwms.se/wp-content/uploads/2023/02/jlm_logo_400.png"
 }

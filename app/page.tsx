@@ -1,12 +1,15 @@
 import Image from 'next/image'
 /*
-import { NavigationBar, } from "@/components/navs/navigationbar"
+  import { NavigationBar, } from "@/components/navs/navigationbar"
+  import SetPageTitle from '@/components/customui/pagetitle'
 */
 import { NavigationBar, } from "@/components/navs/navigationbar"
+import SetPageTitle from '@/components/customui/pagetitle'
 
 export default function Home() {
     return (
         <main>
+            <SetPageTitle title={"WMS"} />
             <NavigationBar></NavigationBar>
             <div className="flex min-h-screen flex-col items-center justify-between p-24">
                 <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">

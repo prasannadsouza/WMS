@@ -1,38 +1,17 @@
+import { ArrowDownIcon, ArrowUpIcon, CaretSortIcon, EyeNoneIcon, CheckboxIcon, } from "@radix-ui/react-icons"
+import { Column, Table as TablePrimitive, ColumnDef } from "@tanstack/react-table"
 /*
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import {    DropdownMenu,    DropdownMenuContent,    DropdownMenuItem,    DropdownMenuSeparator,    DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
-
 import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
   */
-import {
-    ArrowDownIcon,
-    ArrowUpIcon,
-    CaretSortIcon,
-    EyeNoneIcon,
-    CheckboxIcon,
-} from "@radix-ui/react-icons"
-import { Column, Table as TablePrimitive, ColumnDef } from "@tanstack/react-table"
-
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
-
 import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
 
 interface DataTableColumnHeaderProps<TData, TValue>
@@ -51,7 +30,6 @@ export function DataTableColumnHeader<TData, TValue>({
     }
 
     const sortChanged = getTableMeta(table)?.sortChanged;
-
     return (
         <div className={cn("flex items-center space-x-2", className)}>
             <DropdownMenu>
@@ -62,9 +40,9 @@ export function DataTableColumnHeader<TData, TValue>({
                         className="px-1 h-8 data-[state=open]:bg-accent hover:border-2"
                     >
                         <span>{(column.columnDef.meta as ColumnMeta)?.title}</span>
-                        {column.getCanSort() && (column.getIsSorted() === "desc" ? (
+                        {column.getCanSort() && (column.getIsSorted() === DataTableConstants.desc ? (
                             <ArrowDownIcon className="ml-2 h-4 w-4" />
-                        ) : column.getIsSorted() === "asc" ? (
+                        ) : column.getIsSorted() === DataTableConstants.asc ? (
                             <ArrowUpIcon className="ml-2 h-4 w-4" />
                         ) : (
                             <CaretSortIcon className="ml-2 h-4 w-4" />

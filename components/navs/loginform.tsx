@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { fnValidateUserType } from "@/components/navs/navigationbar";
 import { ErrorData } from "@/lib/types/types"
 import { errorCodes } from "@/lib/types/errorcodes"
+import { FormInput, FormInputHandle } from "@/components/customui/forminput"
 */
 import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTrigger, } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
@@ -20,7 +21,6 @@ import { useRouter } from 'next/navigation'
 export interface LoginFormProps {
     validateUser: fnValidateUserType,
     userMenuTriggerElement: JSX.Element,
-    postLoginURL: string
 }
 export default function LoginForm(props: LoginFormProps) {
     let [isPending, startTransition] = useTransition();
@@ -30,6 +30,7 @@ export default function LoginForm(props: LoginFormProps) {
     function getInitialModel() {
         return {
             isLoginSuccess: false,
+            postLoginURL: "/"
         }
     }
 
@@ -37,8 +38,11 @@ export default function LoginForm(props: LoginFormProps) {
     const router = useRouter()
 
     useEffect(() => {
-        router.push(props.postLoginURL)
-    }, [model.isLoginSuccess === true]);
+        if (model.isLoginSuccess) {
+            setModel(getInitialModel())
+            router.push(model.postLoginURL)
+        }
+    }, [model.isLoginSuccess]);
 
     function clearErrors() {
         refPassword?.current?.setError("");
@@ -49,7 +53,7 @@ export default function LoginForm(props: LoginFormProps) {
         if (open) clearErrors();
     }
 
-    function loginHasErrors(errors: ErrorData[] | null) {
+    function loginHasErrors(errors?: ErrorData[] | null) {
         if (!(errors?.length)) return false
 
         let unhandledErrors: ErrorData[] = [];
@@ -106,12 +110,7 @@ export default function LoginForm(props: LoginFormProps) {
             hasError = true
         }
 
-        console.log({
-            component: "loginform!submitlogin!aftervalidateuser",
-            username: refUsername.current?.getValue(),
-            password: refPassword.current?.getValue(),
-            hasError,
-        })
+
         if (hasError) return;
 
         const response = await props.validateUser({
@@ -120,17 +119,15 @@ export default function LoginForm(props: LoginFormProps) {
         })
 
         if (loginHasErrors(response.errors)) {
-            //refUsername?.current?.setValue(refUsername?.current?.getValue());
-            //refPassword?.current?.setValue(refPassword?.current?.getValue());
             return;
         }
-        setModel({ ...model, isLoginSuccess: true });
+        setModel({ ...model, isLoginSuccess: true, postLoginURL: response!.data!.postLoginURL! });
     }
 
     return (
         <AlertDialog onOpenChange={onOpenChange}>
             <AlertDialogTrigger asChild>
-                <Button variant="link">
+                <Button variant="link" className="hover:no-underline" >
                     {props.userMenuTriggerElement}
                 </Button>
             </AlertDialogTrigger>

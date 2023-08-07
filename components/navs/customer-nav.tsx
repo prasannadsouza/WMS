@@ -2,99 +2,105 @@ import * as React from "react"
 import Link from "next/link"
 
 /*
-import { cn, getOrgURL } from "@/lib/utils"
-import { NavigationBar, getMenuIconClass } from "@/components/navs/navigationbar"
+import { NavigationBar } from "@/components/navs/navigationbar"
 import { appStore, selectAppData } from "@/lib/store/store"
 import { appDataSlice } from "@/lib/store/appDataSlice"
 import { Auth as AuthRequest, AppUser } from "@/lib/types/request"
 import { ResponseData } from "@/lib/types/types"
-import { validateUser, } from "@/lib/server/admin/authutil"
-import { deleteAuthCookie, setAuthCookie } from "@/lib/server/util"
-import { App as AdminConstants } from '@/lib/types/admin/constants';
-import { Pages } from "@/lib/types/admin/constants"
+import { validateUser, } from "@/lib/server/customer/authutil"
+import { setAuthCookie, deleteAuthCookie, } from "@/lib/server/util"
 import { NavigationMenuLink } from "@/components/ui/navigation-menu"
 import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarPortal, MenubarContent, } from "@/components/ui/menubar"
-import { Warehouse, Users2, Settings, Globe, Scroll, Send } from "lucide-react";
+import { Settings, Globe, Scroll, Send, BookDown, BookUp } from "lucide-react";
 import LogoutButton from "@/components/navs/logout"
 import { errorCodes } from '@/lib/types/errorcodes'
-
+import { getOrgURL } from "@/lib/utils"
+import { Pages } from "@/lib/types/customer/constants"
  */
 
-import { cn, getOrgURL } from "@/lib/utils"
-import { NavigationBar, getMenuIconClass } from "@/components/navs/navigationbar"
+
+import { NavigationBar } from "@/components/navs/navigationbar"
 import { appStore, selectAppData } from "@/lib/store/store"
 import { appDataSlice } from "@/lib/store/appDataSlice"
 import { Auth as AuthRequest, AppUser } from "@/lib/types/request"
 import { ResponseData } from "@/lib/types/types"
-import { validateUser, } from "@/lib/server/admin/authutil"
-import { deleteAuthCookie, setAuthCookie } from "@/lib/server/util"
-import { App as AdminConstants } from '@/lib/types/admin/constants';
-import { Pages } from "@/lib/types/admin/constants"
+import { validateUser, } from "@/lib/server/customer/authutil"
+import { setAuthCookie, deleteAuthCookie, } from "@/lib/server/util"
 import { NavigationMenuLink } from "@/components/ui/navigation-menu"
 import { MenubarItem, MenubarSeparator, MenubarSub, MenubarSubContent, MenubarSubTrigger, MenubarPortal, MenubarContent, } from "@/components/ui/menubar"
-import { Warehouse, Users2, Settings, Globe, Scroll, Send } from "lucide-react";
+import { Settings, Globe, Scroll, Send, BookDown, BookUp } from "lucide-react";
 import LogoutButton from "@/components/navs/logout"
 import { errorCodes } from '@/lib/types/errorcodes'
-
+import { getOrgURL } from "@/lib/utils"
+import { Pages } from "@/lib/types/customer/constants"
 
 function MainMenuContent() {
-    const appData = selectAppData(appStore.getState());
+
+    const appState = appStore.getState();
+    const appData = selectAppData(appState);
 
     if (!appData?.loggedInUser) return null;
 
+    const orgid = selectAppData(appState).organisation!.id
+
     return (<MenubarContent align="start" sideOffset={5} alignOffset={-3}>
-        <Link href="/admin/admins" legacyBehavior passHref>
+        <Link href={`${orgid}/orders`} legacyBehavior passHref>
             <NavigationMenuLink>
                 <MenubarItem className="hover:border-2">
-                    <Users2 className={"mr-1"} />
-                    Users
+                    <BookDown className={"mr-1"} />
+                    Orders
                 </MenubarItem>
             </NavigationMenuLink>
         </Link>
-        <Link href="/admin/customers" legacyBehavior passHref>
+        <Link href={`${orgid}/purchaseorders`} legacyBehavior passHref>
             <NavigationMenuLink>
                 <MenubarItem className="hover:border-2">
-                    <Warehouse className={"mr-1"} />
-                    Customers
+                    <BookUp className={"mr-1"} />
+                    Purchase Orders
                 </MenubarItem>
             </NavigationMenuLink>
         </Link>
-        <MenubarItem className="hover:border-2"> New Window{' '}
-            <div className={getMenuIconClass()}>⌘ N </div>
+        <MenubarItem className="hover:border-2"> Movement
         </MenubarItem>
-        <MenubarItem className="hover:border-2" disabled>New Incognito Window</MenubarItem>
+        <MenubarItem className="hover:border-2" disabled>Inventory</MenubarItem>
         <MenubarSeparator />
         <MenubarSub><MenubarSubTrigger className="hover:border-2">
-            Share
+            Master
         </MenubarSubTrigger>
             <MenubarPortal>
                 <MenubarSubContent alignOffset={-5} >
-                    <MenubarItem className="hover:border-2"> Email Link </MenubarItem>
-                    <MenubarItem className="hover:border-2">Messages </MenubarItem>
+                    <MenubarItem className="hover:border-2">Places</MenubarItem>
+                    <MenubarItem className="hover:border-2">Article</MenubarItem>
                     <MenubarItem className="hover:border-2"> Notes </MenubarItem>
                 </MenubarSubContent>
             </MenubarPortal>
         </MenubarSub>
         <MenubarSeparator />
-        <MenubarItem className="hover:border-2"> Print…{' '}
-            <div className={getMenuIconClass()}> ⌘ P </div>
-        </MenubarItem>
+        <MenubarSub><MenubarSubTrigger className="hover:border-2">
+            Reports
+        </MenubarSubTrigger>
+            <MenubarPortal>
+                <MenubarSubContent alignOffset={-5} >
+                    <MenubarItem className="hover:border-2">Article History</MenubarItem>
+                    <MenubarItem className="hover:border-2">Inventory</MenubarItem>
+                    <MenubarItem className="hover:border-2">Sync</MenubarItem>
+                </MenubarSubContent>
+            </MenubarPortal>
+        </MenubarSub>
     </MenubarContent>)
 }
 
 function UserMenuContent() {
-    if (!selectAppData(appStore.getState()).loggedInUser) return null;
+
+    const appState = appStore.getState();
+    if (!selectAppData(appState).loggedInUser) return null;
+    const orgId = selectAppData(appState).organisation!.id!
 
     async function performLogout() {
         'use server'
-        await deleteAuthCookie(AdminConstants.orgId)
         const { setLoggedInUser } = appDataSlice.actions
+        await deleteAuthCookie(orgId)
         appStore.dispatch(setLoggedInUser(null))
-
-        console.log({
-            component: "UserMenuContent!performLogout",
-            returnurl: getOrgURL(AdminConstants.orgId, "")
-        })
     }
 
     return (<MenubarContent align="start" sideOffset={5} alignOffset={-3}>
@@ -104,22 +110,22 @@ function UserMenuContent() {
         <MenubarItem className="hover:border-2"> <Scroll className={"mr-1"} />Help</MenubarItem>
         <MenubarItem className="hover:border-2"> <Send className={"mr-1"} />Support</MenubarItem>
         <MenubarSeparator />
-        <LogoutButton performLogout={performLogout} rootURL={getOrgURL(AdminConstants.orgId, "")} />
-
-
+        <LogoutButton performLogout={performLogout} rootURL={getOrgURL(orgId, "")} />
     </MenubarContent>)
 }
 
-export function AdminNav() {
+export function CustomerNav() {
 
     async function performLogin(loginRequest: AuthRequest): Promise<ResponseData<AppUser | null>> {
-
         "use server";
-        const validateResponse = await validateUser(loginRequest);
         const response: ResponseData<AppUser> = {
             data: null,
             errors: [],
         }
+        const appState = appStore.getState();
+        const organisation = selectAppData(appState).organisation;
+        const orgId = organisation!.id!;
+        const validateResponse = await validateUser(orgId, loginRequest);
 
         if (validateResponse.errors?.length) {
             response.errors = validateResponse.errors;
@@ -138,15 +144,17 @@ export function AdminNav() {
         response.data = {
             firstName: user!.firstName,
             lastName: user!.lastName,
-            postLoginURL: getOrgURL(AdminConstants.orgId, Pages.home)
+            postLoginURL: getOrgURL(orgId, Pages.home)
         }
 
-        if (user?.postLoginURL?.length) response.data.postLoginURL = getOrgURL(AdminConstants.orgId, user.postLoginURL);
+        if (organisation!.postLoginURL?.length) response.data.postLoginURL = getOrgURL(orgId, organisation!.postLoginURL!);
+        if (user!.postLoginURL?.length) response.data.postLoginURL = getOrgURL(orgId, user!.postLoginURL!);
 
         const { setLoggedInUser } = appDataSlice.actions
-        await setAuthCookie(AdminConstants.orgId, user!.id!)
+        await setAuthCookie(orgId, user!.id!)
         appStore.dispatch(setLoggedInUser(response.data))
         return response;
+
     }
     return (<NavigationBar
         mainMenuContent={MainMenuContent()}
@@ -154,27 +162,3 @@ export function AdminNav() {
         fnValidateUser={performLogin}
     />)
 }
-
-const ListItem = React.forwardRef<
-    React.ElementRef<"a">,
-    React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-    return (
-        <li>
-            <NavigationMenuLink asChild>
-                <a
-                    ref={ref}
-                    className={cn(
-                        "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-                        className
-                    )}                    {...props} >
-                    <div className="text-sm font-medium leading-none">{title}</div>
-                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        {children}
-                    </p>
-                </a>
-            </NavigationMenuLink>
-        </li>
-    )
-})
-ListItem.displayName = "ListItem"

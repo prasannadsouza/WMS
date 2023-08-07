@@ -5,7 +5,8 @@ export type Auth = {
 
 export type AppUser = {
     firstName: string | null,
-    lastName: string | null
+    lastName: string | null,
+    postLoginURL: string | null,
 }
 
 export type ForgotPassword = {

@@ -14,6 +14,15 @@ export interface AppUser {
     lastName: string | null,
     email: string | null,
     id: string | null,
+    postLoginURL?: string | null,
+}
+
+export interface AppCustomer {
+    id: string | null,
+    name: string | null,
+    shortName: string | null,
+    postLoginURL?: string | null,
+    logoURL?: string | null,
 }
 
 export interface Pagination {

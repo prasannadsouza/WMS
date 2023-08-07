@@ -6,7 +6,12 @@ import { appStore, selectAppData } from "@/lib/store/store"
 import LoginForm from "@/components/navs/loginform"
 import { ResponseData } from "@/lib/types/types"
 import { Auth as LoginRequest, AppUser } from "@/lib/types/request"
+import { PageTitle } from "@/components/customui/pagetitle"
+import { App as AdminConstants } from "@/lib/types/admin/constants"
+import { App as WMSConstants } from "@/lib/types/wms/constants"
 */
+
+import { User, ChevronDown, Menu, LogIn } from "lucide-react";
 import { cn } from "@/lib/utils"
 import { Menubar, MenubarMenu, MenubarTrigger, MenubarPortal } from "@/components/ui/menubar"
 import { NavigationMenu } from "@/components/ui/navigation-menu"
@@ -14,8 +19,9 @@ import { appStore, selectAppData } from "@/lib/store/store"
 import LoginForm from "@/components/navs/loginform"
 import { ResponseData } from "@/lib/types/types"
 import { Auth as LoginRequest, AppUser } from "@/lib/types/request"
-import { User, ChevronDown, Menu, LogIn } from "lucide-react";
-
+import { PageTitle } from "@/components/customui/pagetitle"
+import { App as AdminConstants } from "@/lib/types/admin/constants"
+import { App as CustomerConstants } from "@/lib/types/customer/constants"
 export const getMenuItemClass = () => {
     return cn("cursor-pointer group text-[15px] leading-none text-slate-700 rounded flex items-center h-[40px] px-[10px] relative select-none outline-none data-[state=open]:bg-slate-400 data-[state=open]:text-slate-600 data-[highlighted]:bg-gradient-to-br data-[highlighted]:from-slate-500 data-[highlighted]:to-slate-950 data-[highlighted]:text-slate-100 data-[highlighted]:data-[state=open]:text-slate-100 data-[disabled]:text-slate-300 data-[disabled]:pointer-events-none");
 }
@@ -36,16 +42,20 @@ export const getMenuMainIconClass = () => {
     return cn("outline-none select-none font-medium leading-none text-[15px] flex items-center justify-between gap-[2px] m-auto");
 }
 
-function getMenuBarImageSource(customSource: string | null | undefined): string {
-    if (customSource && customSource?.length > 0 == true) return customSource;
-    return "/vercel.svg"
+function getMenuBarImageSource(): string {
+    const appState = appStore.getState();
+    const organisation = selectAppData(appState).organisation;
+
+    if (!organisation) return "/vercel.svg"
+    if (organisation?.logoURL?.length) return organisation.logoURL;
+    if (organisation.id === AdminConstants.orgId) return AdminConstants.logoURL;
+    return CustomerConstants.logoURL;
 }
 
 function getMainMenu(props: NavigationBarProps) {
-
     function getImage() {
         const className = props.userMenuContent ? cn("hidden sm:inline") : cn("")
-        return (<img className={className} src={getMenuBarImageSource(props.appLogoSource)} style={{ width: "70px", height: "35px" }} />)
+        return (<img className={className} src={getMenuBarImageSource()} style={{ width: "70px", height: "35px" }} />)
     }
 
     if (props.mainMenuContent) {
@@ -69,7 +79,7 @@ function getMainMenu(props: NavigationBarProps) {
 
 export function getUserMenuTriggerTitle() {
 
-    const companyName = selectAppData(appStore.getState()).companyName
+    const companyName = selectAppData(appStore.getState()).organisation!.shortName
     const user = selectAppData(appStore.getState()).loggedInUser;
     const firstName = user?.firstName ?? "";
     const lastName = user?.lastName ?? "";
@@ -99,11 +109,14 @@ export function getUserMenuTriggerTitle() {
 }
 
 function getUserMenu(props: NavigationBarProps) {
+
+    const organisation = selectAppData(appStore.getState()).organisation
+    if (!organisation) return null;
+
     if (!props.userMenuContent) {
         if (!props.fnValidateUser) return null;
         return (<div className={cn("ms-auto")}>
             <LoginForm validateUser={props.fnValidateUser}
-                postLoginURL={props.postLoginURL!}
                 userMenuTriggerElement={getUserMenuTriggerTitle()}
             />
         </div>)
@@ -129,22 +142,18 @@ export type fnValidateUserType = (loginRequest: LoginRequest) => Promise<Respons
 export interface NavigationBarProps {
     mainMenuContent?: React.JSX.Element | null,
     userMenuContent?: React.JSX.Element | null,
-    appLogoSource?: string | null;
     fnValidateUser?: fnValidateUserType | null,
-    postLoginURL?: string | null,
 }
 export const NavigationBar = (props: NavigationBarProps) => {
-    let currentTitle = selectAppData(appStore.getState()).currentTitle;
-    if (!(currentTitle?.length > 0)) currentTitle = "WMS"
-
     return (<NavigationMenu className="flex-none block" >
         <div className="flex flex-wrap p-1">
             {getMainMenu(props)}
             <div className={cn("grow m-auto")}>
-                <p className="text-center" >{currentTitle}</p>
+                <PageTitle />
             </div>
             {getUserMenu(props)}
         </div>
         <hr />
     </NavigationMenu>)
+
 }

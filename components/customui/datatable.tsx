@@ -1,58 +1,28 @@
 "use client"
-/*
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
-import { DataTablePagination } from "@/components/customui/datatable-pagination"
-
-import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { cn } from "@/lib/utils"
-*/
-
 import * as React from "react"
 import { ChevronDown } from "lucide-react";
 import { Column, ColumnSort, flexRender, Table as TablePrimitive } from "@tanstack/react-table"
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretSortIcon, CaretUpIcon, CheckboxIcon, Cross2Icon, DotsHorizontalIcon } from "@radix-ui/react-icons"
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuSeparator,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table"
+/*
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
 import { DataTablePagination } from "@/components/customui/datatable-pagination"
-
 import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+
+
+*/
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
+import { DataTablePagination } from "@/components/customui/datatable-pagination"
+import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+
 
 export function DataTable<T>({
     table,
@@ -66,6 +36,14 @@ export function DataTable<T>({
     const [loadSavedTableConfigForAll, setLoadSavedTableConfigForAll] = React.useState(false)
     const [deleteSavedTableConfigForAll, setDeleteSavedTableConfigForAll] = React.useState(false)
     const tableMeta = getTableMeta(table)
+
+    if (!table.getRowModel().rows?.length) {
+        return (
+            <div>No Results</div>
+        )
+    }
+
+    const allColsForSort = getColumnsForSort(table);
 
     const renderHeader = () => {
         return (
@@ -92,136 +70,154 @@ export function DataTable<T>({
             </TableHeader>)
     };
 
-    if (!table.getRowModel().rows?.length) {
-        return (
-            <div>No Results</div>
-        )
+
+    function getColumnMenu() {
+        function getTableConfigOptions() {
+            return (<DropdownMenuSub>
+                <DropdownMenuSubTrigger className="hover:border-2">
+                    Config
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    <div className="flex items-center justify-between space-x-1">
+                        <Button onClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, getTableConfig(table), saveTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Save</Button>
+                        <div className="flex items-center p-1 rounded hover:border-2"  >
+                            <Checkbox onCheckedChange={(value: any) =>
+                                setSaveTableConfigForAll(value)
+                            } className="h-6 w-6" id={"cbsaveconfigforall" + id} ></Checkbox>
+                            <label className="ps-1 grow" htmlFor={"cbsaveconfigforall" + id} >For All</label>
+                        </div>
+
+                    </div>
+                    <DropdownMenuSeparator />
+                    <div className="flex items-center justify-between space-x-1">
+                        <Button onClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, deleteSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Delete</Button>
+                        <div className="flex items-center p-1 rounded hover:border-2"  >
+                            <Checkbox onCheckedChange={(value: any) =>
+                                setDeleteSavedTableConfigForAll(value)
+                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
+                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
+                        </div>
+
+                    </div>
+                    <DropdownMenuSeparator />
+                    <div className="flex items-center justify-between space-x-1">
+                        <Button onClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, loadSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Load</Button>
+                        <div className="flex items-center p-1 rounded hover:border-2"  >
+                            <Checkbox onCheckedChange={(value: any) =>
+                                setLoadSavedTableConfigForAll(value)
+                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
+                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
+                        </div>
+                    </div>
+
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>)
+        }
+
+        function getTableColumnViewOptions() {
+            return (<DropdownMenuSub>
+                <DropdownMenuSubTrigger className="hover:border-2">
+                    Show
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    {getColumnsByName(table.getAllFlatColumns().filter((column) => column.getCanHide())).map((column) => {
+                        return <CheckBoxForShowColumn key={column.id} column={column} />
+                    })}
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>)
+        }
+        function getTableSortOptions() {
+            return (
+                <DropdownMenuSub>
+                    <DropdownMenuSubTrigger className="hover:border-2">
+                        Sort
+                    </DropdownMenuSubTrigger>
+                    <DropdownMenuSubContent>
+                        {
+                            allColsForSort.map((column) => {
+                                return <SortOptionsForColumn key={column.id} table={table} allColumns={allColsForSort} column={column} />
+                            })}
+
+                    </DropdownMenuSubContent>
+                </DropdownMenuSub>)
+        }
+
+        function getTableColumnSequenceOptions() {
+            return (<DropdownMenuSub>
+                <DropdownMenuSubTrigger className="hover:border-2">
+                    Sequence
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    {table.getAllColumns().filter((column) =>
+                        column.getIsVisible).map((column) => {
+                            return <SequenceOptionsForColumn key={column.id} table={table} column={column} />
+                        })}
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>)
+        }
+
+        function getTableColumnResetOption() {
+            return (<div className="flex items-center justify-center space-x-1">
+                <Button onClick={() => {
+                    if (!tableMeta?.tableConfig) return;
+                    initializeTableState(table, tableMeta!.tableConfig)
+                }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2")}>Reset</Button>
+            </div>)
+        }
+
+        return (<DropdownMenu>
+            <DropdownMenuTrigger className="flex flex-content rounded text-sm px-1 py-1 h-8 w-auto cursor-pointer hover:border-2 underline">
+                Columns
+                <ChevronDown className="m-0" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                {getTableColumnViewOptions()}
+                {getTableSortOptions()}
+                {getTableColumnSequenceOptions()}
+                <DropdownMenuSeparator />
+                {getTableConfigOptions()}
+                <DropdownMenuSeparator />
+                {getTableColumnResetOption()}
+            </DropdownMenuContent>
+        </DropdownMenu>)
     }
 
-
-    const allColsForSort = getColumnsForSort(table);
+    function getTable() {
+        return (<Table className="border w-full" ref={tableRef}>
+            {renderHeader()}
+            <TableBody className="z-0">
+                {table.getRowModel().rows.map((row) => (
+                    <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && "selected"}
+                    >
+                        {row.getVisibleCells().map((cell) => (
+                            <TableCell key={cell.id} className="p-0 px-0.5 py-0.5">
+                                {flexRender(
+                                    cell.column.columnDef.cell,
+                                    cell.getContext()
+                                )}
+                            </TableCell>
+                        ))}
+                    </TableRow>
+                ))
+                }
+            </TableBody>
+        </Table>)
+    }
 
     return (
         <div className="space-y-1">
             <div className="border ">
-                <div className="flex items-center p-0.5">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger className="flex rounded text-sm ml-auto px-1 py-1 h-8 w-auto cursor-pointer hover:border-2 underline">
-                            Columns
-                            <ChevronDown className="m-0" />
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="hover:border-2">
-                                    Show
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    {getColumnsByName(table.getAllFlatColumns().filter((column) => column.getCanHide())).map((column) => {
-                                        return <CheckBoxForShowColumn key={column.id} column={column} />
-                                    })}
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="hover:border-2">
-                                    Sort
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    {
-                                        allColsForSort.map((column) => {
-                                            return <SortOptionsForColumn key={column.id} table={table} allColumns={allColsForSort} column={column} />
-                                        })}
-
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="hover:border-2">
-                                    Sequence
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    {table.getAllColumns().filter((column) =>
-                                        column.getIsVisible).map((column) => {
-                                            return <SequenceOptionsForColumn key={column.id} table={table} column={column} />
-                                        })}
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuSub>
-                                <DropdownMenuSubTrigger className="hover:border-2">
-                                    Config
-                                </DropdownMenuSubTrigger>
-                                <DropdownMenuSubContent>
-                                    <div className="flex items-center justify-between space-x-1">
-                                        <Button onClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, getTableConfig(table), saveTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Save</Button>
-                                        <div className="flex items-center p-1 rounded hover:border-2"  >
-                                            <Checkbox onCheckedChange={(value: any) =>
-                                                setSaveTableConfigForAll(value)
-                                            } className="h-6 w-6" id={"cbsaveconfigforall" + id} ></Checkbox>
-                                            <label className="ps-1 grow" htmlFor={"cbsaveconfigforall" + id} >For All</label>
-                                        </div>
-
-                                    </div>
-                                    <DropdownMenuSeparator />
-                                    <div className="flex items-center justify-between space-x-1">
-                                        <Button onClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, deleteSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Delete</Button>
-                                        <div className="flex items-center p-1 rounded hover:border-2"  >
-                                            <Checkbox onCheckedChange={(value: any) =>
-                                                setDeleteSavedTableConfigForAll(value)
-                                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
-                                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
-                                        </div>
-
-                                    </div>
-                                    <DropdownMenuSeparator />
-                                    <div className="flex items-center justify-between space-x-1">
-                                        <Button onClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, loadSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Load</Button>
-                                        <div className="flex items-center p-1 rounded hover:border-2"  >
-                                            <Checkbox onCheckedChange={(value: any) =>
-                                                setLoadSavedTableConfigForAll(value)
-                                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
-                                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
-                                        </div>
-                                    </div>
-
-                                </DropdownMenuSubContent>
-                            </DropdownMenuSub>
-                            <DropdownMenuSeparator />
-                            <div className="flex items-center justify-center space-x-1">
-                                <Button onClick={() => {
-                                    if (!tableMeta?.tableConfig) return;
-                                    initializeTableState(table, tableMeta!.tableConfig)
-                                }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2")}>Reset</Button>
-
-                            </div>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                <div className="flex justify-end p-0.5">
+                    {getColumnMenu()}
                 </div>
-                <Table className="border w-full" ref={tableRef}>
-                    {renderHeader()}
-                    <TableBody className="z-0">
-                        {table.getRowModel().rows.map((row) => (
-                            <TableRow
-                                key={row.id}
-                                data-state={row.getIsSelected() && "selected"}
-                            >
-                                {row.getVisibleCells().map((cell) => (
-                                    <TableCell key={cell.id} className="p-0 px-0.5 py-0.5">
-                                        {flexRender(
-                                            cell.column.columnDef.cell,
-                                            cell.getContext()
-                                        )}
-                                    </TableCell>
-                                ))}
-                            </TableRow>
-                        ))
-                        }
-                    </TableBody>
-                </Table>
+                {getTable()}
             </div>
             <DataTablePagination table={table} />
         </div>
     )
 }
-
 
 function CheckBoxForShowColumn<T>({ column }: { column: Column<T, unknown> }) {
     const id = "cb" + React.useId();
@@ -239,8 +235,6 @@ function CheckBoxForShowColumn<T>({ column }: { column: Column<T, unknown> }) {
 
 function SortOptionsForColumn<T>({ table, allColumns, column }: { table: TablePrimitive<T>, allColumns: Column<T, unknown>[], column: Column<T, unknown> }) {
     const sortDirection = column.getIsSorted();
-    const asc = "asc";
-    const desc = "desc"
     const isSorted = !!column.getIsSorted();
     const sortChanged = getTableMeta(table)?.sortChanged;
 
@@ -300,10 +294,10 @@ function SortOptionsForColumn<T>({ table, allColumns, column }: { table: TablePr
                 variant="ghost"
                 className="px-0.5 py-0.5 w-full justify-start rounded hover:border-2"
                 onClick={() => {
-                    if (sortDirection === asc) {
+                    if (sortDirection === DataTableConstants.asc) {
                         column.toggleSorting(true, table.options.enableMultiSort === true)
                     }
-                    else if (sortDirection === desc) {
+                    else if (sortDirection === DataTableConstants.desc) {
                         column.toggleSorting(false, table.options.enableMultiSort === true)
                     }
                     else {
@@ -313,9 +307,9 @@ function SortOptionsForColumn<T>({ table, allColumns, column }: { table: TablePr
                     sortChanged && sortChanged()
                 }}
             >
-                {sortDirection === asc ? (
+                {sortDirection === DataTableConstants.asc ? (
                     <ArrowUpIcon className="h-5 w-5" />
-                ) : sortDirection === desc ? (
+                ) : sortDirection === DataTableConstants.desc ? (
                     <ArrowDownIcon className="h-5 w-5" />
                 ) : (
                     <CaretSortIcon className="h-5 w-5" />

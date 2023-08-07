@@ -4,6 +4,7 @@ export interface AppUser {
     email: string | null,
     id: string | null,
     enabled: boolean | null,
+    appCustomerId: string | null,
     postLoginURL?: string | null,
 }
 

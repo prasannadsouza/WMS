@@ -1,4 +1,7 @@
 "use client"
+import React from 'react'
+import { ColumnFiltersState, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getSortedRowModel, useReactTable, Table as TablePrimitive } from "@tanstack/react-table"
+
 /*
 import { DataTable } from "@/components/customui/datatable";
 import { AppUser } from "@/lib/types/admin/types";
@@ -18,18 +21,6 @@ import { typeGetAdminUsers, typeSaveTableConfig, typeGetTableConfig, typeDeleteS
 import { App as AppConstants } from "@/lib/types/constants"
 import { TableMeta, initializeTableState, getTableMeta } from "@/components/customui/datatable-extensions";
 
-import React from 'react'
-import {
-    ColumnFiltersState,
-    getCoreRowModel,
-    getFacetedRowModel,
-    getFacetedUniqueValues,
-    getFilteredRowModel,
-    getSortedRowModel,
-    useReactTable,
-    Table as TablePrimitive
-
-} from "@tanstack/react-table"
 
 export default function AdminUserTable({
     tableId,
@@ -88,15 +79,8 @@ export default function AdminUserTable({
             sortChanged: () => {
                 if (tableConfig === null) return;
                 setIsSortingChanged(true);
-                console.log({
-                    component: "admintable.customsorting change"
-                })
             },
             saveTableConfig: async (table: TablePrimitive<AppUser>, tableConfig: TableConfig, saveForAll: boolean) => {
-                console.log({
-                    component: "admintable.saveTableConfig",
-                    saveForAll,
-                })
                 saveTableConfig && await saveTableConfig(getTableMeta(table).id, tableConfig, saveForAll);
             },
             deleteSavedTableConfig: async (table: TablePrimitive<AppUser>, deleteForAll: boolean) => {
@@ -155,12 +139,6 @@ export default function AdminUserTable({
                 index: index,
             } as SortColumn
         });
-        console.log({
-            component: "adminusertable.sortingchanged.useffect",
-            tablesorting: table.getState().sorting,
-            sortColumns
-        });
-
         if (tableConfig === null) return;
         setIsSortingChanged(false);
 
@@ -177,10 +155,6 @@ export default function AdminUserTable({
 
     React.useEffect(() => {
         if (tableConfig !== null) return;
-        console.log({
-            component: "adminusertable.useffect.settingcolumnconfig",
-
-        });
         (async () => {
             try {
                 const responseData = await getTableConfig(tableId, false, true);
