@@ -1,3 +1,4 @@
+import { App as AppConstants } from "@/lib/types/constants"
 export type ResponseData<T> = {
     data: T | null;
     errors?: ErrorData[] | null;
@@ -46,7 +47,7 @@ export interface TableConfig {
     sort: SortColumn[],
     pagination: {
         recordsPerPage: number
-    }
+    },
 }
 
 export interface ColumnSequence {
@@ -54,17 +55,22 @@ export interface ColumnSequence {
     index: number
 }
 
-export function getResponseData<T>() {
-    let responseData: ResponseData<T[]> = {
-        data: [],
+export function getResponseData<T>(data: T | null) {
+    let responseData: ResponseData<T> = {
+        data: data,
         errors: [],
         pagination: {
             page: 1,
             totalRecords: 0,
-            recordsPerPage: 20,
+            recordsPerPage: Math.min(...AppConstants.Pagination.pageSizeRange),
             sortColumns: [],
         }
     };
 
     return responseData;
 }
+
+export type fnSaveTableConfig = (tableType: string, tableId: string, tableConfig: TableConfig, forAll: boolean, forDefault: boolean) => Promise<ResponseData<boolean>>
+export type fnDeleteSavedTableConfig = (tableType: string, tableId: string, forAll: boolean, forDefault: boolean) => Promise<ResponseData<boolean>>
+export type fnGetTableConfig = (tableType: string, tableId: string, forAll: boolean, forDefault: boolean, forceGetDefault: boolean) => Promise<ResponseData<TableConfig>>
+export type fnGetData<T> = (page: number, pageSize: number, sortColumn: SortColumn[]) => Promise<ResponseData<T[]>>

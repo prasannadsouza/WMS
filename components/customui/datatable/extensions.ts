@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Column, SortingState, Table as TablePrimitive, VisibilityState } from "@tanstack/react-table"
+import { Column, SortingState, Row as RowPrimitive, Table as TablePrimitive, VisibilityState } from "@tanstack/react-table"
 /*
-import { TableConfig } from "@/lib/types/types";
+import { TableConfig, SortColumn } from "@/lib/types/types";
 import { App as AppConstants } from "@/lib/types/constants"
  */
 
-import { TableConfig } from "@/lib/types/types";
+import { TableConfig, SortColumn } from "@/lib/types/types";
 import { App as AppConstants } from "@/lib/types/constants"
 
 const useStickyHeader = (defaultSticky = false) => {
@@ -53,13 +53,24 @@ export interface ColumnMeta {
 }
 
 export interface TableMeta<T> {
+    tableType: string,
     id: string
     sortChanged?: () => void
-    saveTableConfig?: (table: TablePrimitive<T>, tableConfig: TableConfig, saveForAll: boolean) => void
-    deleteSavedTableConfig?: (table: TablePrimitive<T>, deleteForAll: boolean) => void
-    loadSavedTableConfig?: (table: TablePrimitive<T>, forAll: boolean) => void
+    saveTableConfig?: (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => void
+    deleteSavedTableConfig?: (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => void
+    loadSavedTableConfig?: (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => void
+    showSelectedTable?: () => void
+    showMainTable?: () => void
+    onSelectedRowRemoved?: (rows: RowPrimitive<T>[]) => void
+    onSelectedRowAdded?: (rows: RowPrimitive<T>[]) => void
+    onRowDeleted?: (row: RowPrimitive<T>) => void
+    onAllRowsDeleted?: (table: TablePrimitive<T>) => void
     tableConfig?: TableConfig | null,
     isTableForSelectedData: boolean,
+    enableRowSelection?: boolean,
+    enableMultiRowSelection?: boolean,
+    showConfigOptionsForAll?: boolean,
+    showConfigOptionsForDefault?: boolean,
 }
 
 export function getColumnTitle<T>(column: Column<T, unknown>) {
@@ -191,13 +202,7 @@ export function getTableConfig<T>(table: TablePrimitive<T>) {
             column: column.id,
             index: index,
         })),
-        sort: table.getState().sorting.map((column, index) => {
-            return {
-                column: column.id,
-                descending: column.desc,
-                index: index,
-            }
-        }),
+        sort: getTableSortConfig(table),
         hidden: table.getAllColumns().filter((column) => !column.getIsVisible()).map((column) => {
             return {
                 column: column.id
@@ -207,13 +212,37 @@ export function getTableConfig<T>(table: TablePrimitive<T>) {
             recordsPerPage: table.getState().pagination.pageSize,
         }
     }
-
     return tableConfig;
+}
+
+export function getTableSortConfig<T>(table: TablePrimitive<T>) {
+    return table.getState().sorting.map((column, index) => {
+        return {
+            column: column.id,
+            descending: column.desc,
+            index: index,
+        } as SortColumn
+    })
 }
 
 export const DataTableConstants = {
     actions: "actions",
     select: "select",
+    delete: "delete",
     asc: "asc",
     desc: "desc"
+}
+
+export type fnSaveTableConfig = (tableId: string, tableConfig: TableConfig, saveForAll: boolean) => void
+export type fnDeleteSavedTableConfig = (tableId: string, deleteForAll: boolean) => void
+export type fnGetTableConfig = (tableId: string, forAll: boolean, forceGetForAll: boolean) => TableConfig
+export type fnGetData<T> = (page: number, pageSize: number, sortColumn: SortColumn[]) => T[]
+
+export function getPageCount(pageSize: number, totalRecords: number) {
+    if (pageSize <= 0) pageSize = 1;
+    if (totalRecords <= 0) return 0;
+    let totalPages = totalRecords / pageSize
+    let pageCount = Math.floor(totalPages)
+    if (totalPages > pageCount) return pageCount + 1;
+    return pageCount;
 }

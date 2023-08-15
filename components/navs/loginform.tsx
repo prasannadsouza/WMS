@@ -15,7 +15,7 @@ import { ErrorData } from "@/lib/types/types"
 import { errorCodes } from "@/lib/types/errorcodes"
 import { FormInput, FormInputHandle } from "@/components/customui/forminput"
 import { X } from "lucide-react";
-import { useRef, useTransition, useState, useEffect } from 'react'
+import React from 'react'
 import { useRouter } from 'next/navigation'
 
 export interface LoginFormProps {
@@ -23,26 +23,19 @@ export interface LoginFormProps {
     userMenuTriggerElement: JSX.Element,
 }
 export default function LoginForm(props: LoginFormProps) {
-    let [isPending, startTransition] = useTransition();
-    const refUsername = useRef<FormInputHandle>(null);
-    const refPassword = useRef<FormInputHandle>(null);
+    let [isPending, startTransition] = React.useTransition();
+    const refUsername = React.useRef<FormInputHandle>(null);
+    const refPassword = React.useRef<FormInputHandle>(null);
 
     function getInitialModel() {
         return {
             isLoginSuccess: false,
-            postLoginURL: "/"
+            postLoginURL: "/",
         }
     }
 
-    const [model, setModel] = useState(getInitialModel());
+    const [model, setModel] = React.useState(getInitialModel());
     const router = useRouter()
-
-    useEffect(() => {
-        if (model.isLoginSuccess) {
-            setModel(getInitialModel())
-            router.push(model.postLoginURL)
-        }
-    }, [model.isLoginSuccess]);
 
     function clearErrors() {
         refPassword?.current?.setError("");
@@ -110,7 +103,6 @@ export default function LoginForm(props: LoginFormProps) {
             hasError = true
         }
 
-
         if (hasError) return;
 
         const response = await props.validateUser({
@@ -123,6 +115,27 @@ export default function LoginForm(props: LoginFormProps) {
         }
         setModel({ ...model, isLoginSuccess: true, postLoginURL: response!.data!.postLoginURL! });
     }
+
+    React.useEffect(() => {
+        if (model.isLoginSuccess) {
+            setModel(getInitialModel())
+            router.push(model.postLoginURL)
+        }
+    }, [model.isLoginSuccess]);
+
+    React.useEffect(() => {
+        const onPageLoad = () => {
+            refUsername?.current?.setFocus();
+        };
+
+        if (document.readyState === 'complete') {
+            onPageLoad();
+        } else {
+            window.addEventListener('load', onPageLoad);
+            // Remove the event listener when component unmounts
+            return () => window.removeEventListener('load', onPageLoad);
+        }
+    }, [])
 
     return (
         <AlertDialog onOpenChange={onOpenChange}>

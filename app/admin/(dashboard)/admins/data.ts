@@ -1,16 +1,16 @@
 'use server'
-
+import { faker } from "@faker-js/faker"
 /*
-  import { ResponseData,ColumnConfig,SortColumn } from "@/lib/types/types"
+import { ResponseData, TableConfig, SortColumn, getResponseData } from "@/lib/types/types"
 import { AppUser } from "@/lib/types/admin/types"
 import { App as AppConstants } from "@/lib/types/constants"
-
+import { App as AdminConstants } from "@/lib/types/admin/constants"
 */
 
-import { faker } from "@faker-js/faker"
-import { ResponseData, TableConfig, SortColumn } from "@/lib/types/types"
+import { ResponseData, TableConfig, SortColumn, getResponseData } from "@/lib/types/types"
 import { AppUser } from "@/lib/types/admin/types"
 import { App as AppConstants } from "@/lib/types/constants"
+import { App as AdminConstants } from "@/lib/types/admin/constants"
 
 export async function getAdminUsers(page: number, pageSize: number, sortColumn: SortColumn[]) {
 
@@ -57,46 +57,62 @@ export async function getAdminUsers(page: number, pageSize: number, sortColumn: 
     return responseData;
 }
 
-export async function saveTableConfig(tableId: string, tableConfig: TableConfig, saveForAll: boolean) {
+export async function saveTableConfig(tableType: string, tableId: string, tableConfig: TableConfig, forAll: boolean, forDefault: boolean) {
     console.log({
         component: "admins.data.ts.saveTableConfig",
+        tableType,
         tableId,
-        saveForAll,
-        tableConfig
+        tableConfig,
+        forAll,
+        forDefault,
     })
+
+    return getResponseData<boolean>(true)
 }
 
-export async function deleteSavedTableConfig(tableId: string, deleteForAll: boolean) {
+export async function deleteSavedTableConfig(tableType: string, tableId: string, forAll: boolean, forDefault: boolean) {
     console.log({
         component: "admins.data.ts.deleteSavedTableConfig",
-        tableId,
-        deleteForAll
-    })
-}
-
-export async function getTableConfig(tableId: string, forAll: boolean, forceGetForAll: boolean) {
-    console.log({
-        component: "admins.data.ts.getTableConfig",
+        tableType,
         tableId,
         forAll,
-        forceGetForAll
+        forDefault,
+    })
+
+    return getResponseData<boolean>(true)
+
+}
+
+export async function getTableConfig(tableType: string, tableId: string, forAll: boolean, forDefault: boolean, forceGetDefault: boolean) {
+    console.log({
+        component: "admins.data.ts.getTableConfig",
+        tableType,
+        tableId,
+        forAll,
+        forDefault,
+        forceGetDefault
     })
     let responseData: ResponseData<TableConfig> = {
-        data: {
+        data: null,
+        errors: []
+    }
+
+    if (tableType === AdminConstants.tableType.adminUser) {
+        responseData.data = {
             hidden: [{ column: "email" }],
-            sequence: [{ column: "enabled", index: 1 }, { column: "actions", index: 2 }, { column: "lastName", index: 4 }, { column: "firstName", index: 4 }],
-            sort: [{ column: "enabled", index: 0, descending: false }, { column: "firstName", index: 1, descending: true }
-            ],
+            sequence: [
+                { column: "enabled", index: 1 },
+                { column: "actions", index: 2 },
+                { column: "lastName", index: 4 },
+                { column: "firstName", index: 4 }],
+            sort: [
+                { column: "enabled", index: 0, descending: false },
+                { column: "firstName", index: 1, descending: true }],
             pagination: {
                 recordsPerPage: Math.min(...AppConstants.Pagination.pageSizeRange),
             }
-        },
-        errors: null
+        }
     }
+
     return responseData
 }
-
-export type typeGetAdminUsers = typeof getAdminUsers
-export type typeSaveTableConfig = typeof saveTableConfig
-export type typeDeleteSavedTableConfig = typeof deleteSavedTableConfig
-export type typeGetTableConfig = typeof getTableConfig

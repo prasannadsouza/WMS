@@ -1,3 +1,4 @@
+import { ResponseData, SortColumn } from "@/lib/types/types"
 export interface AppUser {
     firstName: string | null,
     lastName: string | null,
@@ -15,3 +16,5 @@ export interface AppCustomer {
     logoURL: string | null,
     postLoginURL?: string | null,
 }
+
+export type fnGetAdminUsers = (page: number, pageSize: number, sortColumn: SortColumn[]) => Promise<ResponseData<AppUser[]>>

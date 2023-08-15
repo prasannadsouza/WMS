@@ -5,47 +5,19 @@ import { Row, ColumnDef } from "@tanstack/react-table"
 
 /*
 import { Button } from "@/components/ui/button"
-
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuSeparator,
-    DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { AppUser } from "@/lib/types/admin/types"
-import { DataTableColumnHeader, GetDataTableRowSelectionColumn } from "@/components/customui/datatable-columnheader"
-import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
+import { DataTableColumnHeader, GetDataTableRowSelectionColumn, GetDataTableRowDeleteColumn } from "@/components/customui/datatable/columnheader"
+import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable/extensions"
 import { TableConfig } from "@/lib/types/types"
 import { App as AppConstants } from "@/lib/types/constants"
-    */
+*/
 
 import { Button } from "@/components/ui/button"
-
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuSeparator,
-    DropdownMenuShortcut,
-    DropdownMenuSub,
-    DropdownMenuSubContent,
-    DropdownMenuSubTrigger,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { AppUser } from "@/lib/types/admin/types"
-import { DataTableColumnHeader, GetDataTableRowSelectionColumn } from "@/components/customui/datatable-columnheader"
-import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
+import { DataTableColumnHeader, GetDataTableRowSelectionColumn, GetDataTableRowDeleteColumn } from "@/components/customui/datatable/columnheader"
+import { ColumnMeta, DataTableConstants } from "@/components/customui/datatable/extensions"
 import { TableConfig } from "@/lib/types/types"
 import { App as AppConstants } from "@/lib/types/constants"
 interface DataTableRowActionsProps<TData> {
@@ -79,6 +51,7 @@ export function getDefaultTableConfig() {
     tableConfig.sequence.push({ column: AdminUserConstants.email, index: index++ })
     tableConfig.sequence.push({ column: AdminUserConstants.enabled, index: index++ })
     tableConfig.sequence.push({ column: DataTableConstants.actions, index: index++ })
+    tableConfig.sequence.push({ column: DataTableConstants.delete, index: index++ })
 
     index = 0
     tableConfig.sort.push({ column: AdminUserConstants.enabled, descending: false, index: index++ })
@@ -87,7 +60,9 @@ export function getDefaultTableConfig() {
     return tableConfig;
 }
 
-export function getTableColumns<AppUser>(enableRowSelection?: boolean, enableMultiRowSelection?: boolean, showActions?: boolean) {
+export function getTableColumns<AppUser>(
+    enableRowSelection?: boolean, enableMultiRowSelection?: boolean, showActions?: boolean, showDeleteRow?: boolean
+) {
     let columns: ColumnDef<AppUser>[] = [
         {
             id: AdminUserConstants.id,
@@ -203,6 +178,8 @@ export function getTableColumns<AppUser>(enableRowSelection?: boolean, enableMul
 
     if (enableRowSelection || enableMultiRowSelection) columns.splice(0, 0, GetDataTableRowSelectionColumn(enableMultiRowSelection))
 
+    if (showDeleteRow) columns.push(GetDataTableRowDeleteColumn())
+
     return columns;
 }
 
@@ -213,8 +190,6 @@ function DataTableRowActions<TData>({
     const user = row.original as AppUser
 
     const getBoolValue = (value?: boolean | null) => value === true ? "1" : "0";
-
-
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>

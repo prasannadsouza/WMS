@@ -92,7 +92,7 @@ export function DataTablePagination<TData>({
     return (
         <div className="flex flex-wrap items-end justify-end px-0.5">
             <div className="items-end px-2">
-                <span className="text-xs font-medium block ms-2">Rows</span>
+                <span className="text-xs font-medium block ms-1">Rows</span>
                 <Select
                     value={`${table.getState().pagination.pageSize}`}
                     onValueChange={(value) => {

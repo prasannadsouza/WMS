@@ -100,7 +100,7 @@ const FormInput = React.forwardRef((props: FormInputProps, ref) => {
         <div>
             <div className="flex rounded border">
                 <Input defaultValue={props.initialValue} type={props.inputType} ref={refInput} onChange={handleChange} className={(getTextInputClass())} onBlur={() => { if (props.onBlur) props.onBlur() }} />
-                <Button type="button" className={getClearButtonClass()} onClick={() => onClearButtonClick()} >
+                <Button tabIndex={-1} type="button" className={getClearButtonClass()} onClick={() => onClearButtonClick()} >
                     <X size={15} />
                 </Button>
             </div>

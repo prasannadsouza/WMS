@@ -5,20 +5,18 @@ import { Column, ColumnSort, flexRender, Table as TablePrimitive } from "@tansta
 import { ArrowDownIcon, ArrowUpIcon, CaretDownIcon, CaretSortIcon, CaretUpIcon, CheckboxIcon, Cross2Icon, DotsHorizontalIcon } from "@radix-ui/react-icons"
 
 /*
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
-import { DataTablePagination } from "@/components/customui/datatable-pagination"
-import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
+import { DataTablePagination } from "@/components/customui/datatable/pagination"
+import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable/extensions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-
-
 */
-import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
-import { DataTablePagination } from "@/components/customui/datatable-pagination"
-import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable-extensions"
+import { DataTablePagination } from "@/components/customui/datatable/pagination"
+import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, initializeTableState, getTableConfig } from "@/components/customui/datatable/extensions"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -29,15 +27,10 @@ export function DataTable<T>({
 
 }: { table: TablePrimitive<T> }) {
 
-    const id = React.useId();
     const { tableRef, isSticky } = useStickyHeader();
-
-    const [saveTableConfigForAll, setSaveTableConfigForAll] = React.useState(false)
-    const [loadSavedTableConfigForAll, setLoadSavedTableConfigForAll] = React.useState(false)
-    const [deleteSavedTableConfigForAll, setDeleteSavedTableConfigForAll] = React.useState(false)
     const tableMeta = getTableMeta(table)
 
-    if (!table.getRowModel().rows?.length) {
+    if (!tableMeta.isTableForSelectedData && !table.getRowModel().rows?.length) {
         return (
             <div>No Results</div>
         )
@@ -72,44 +65,55 @@ export function DataTable<T>({
 
 
     function getColumnMenu() {
+
+
+
+        function GetConfigMenu({ title, onSaveClick, onLoadClick, onDeleteClick }: {
+            title: string
+            , onSaveClick: () => void
+            , onLoadClick: () => void
+            , onDeleteClick: () => void
+        }) {
+            return (<DropdownMenuSub>
+                <DropdownMenuSubTrigger>
+                    {title}
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                    <div className="space-y-1">
+                        <div className="flex">
+                            <Button onClick={() => { onSaveClick() }} variant="outline" className={cn("flex  h-8 px-5 py-0.5 rounded grow hover:border-2")} >Save</Button>
+                        </div>
+                        <div className="flex">
+                            <Button onClick={() => { onLoadClick() }} variant="outline" className={cn("flex  h-8 px-5 py-0.5 rounded grow hover:border-2")} >Load</Button>
+                        </div>
+                        <div className="flex">
+                            <Button onClick={() => { onDeleteClick() }} variant="outline" className={cn("flex  h-8 px-5 py-0.5 rounded grow hover:border-2")} >Delete</Button>
+                        </div>
+                    </div>
+                </DropdownMenuSubContent>
+            </DropdownMenuSub>)
+        }
+
         function getTableConfigOptions() {
             return (<DropdownMenuSub>
                 <DropdownMenuSubTrigger className="hover:border-2">
                     Config
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
-                    <div className="flex items-center justify-between space-x-1">
-                        <Button onClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, getTableConfig(table), saveTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Save</Button>
-                        <div className="flex items-center p-1 rounded hover:border-2"  >
-                            <Checkbox onCheckedChange={(value: any) =>
-                                setSaveTableConfigForAll(value)
-                            } className="h-6 w-6" id={"cbsaveconfigforall" + id} ></Checkbox>
-                            <label className="ps-1 grow" htmlFor={"cbsaveconfigforall" + id} >For All</label>
-                        </div>
-
+                    <div>
+                        <GetConfigMenu title="For Me"
+                            onLoadClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, false, false) }}
+                            onSaveClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, false, false) }}
+                            onDeleteClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, false, false) }} />
+                        {tableMeta.showConfigOptionsForAll && <GetConfigMenu title="For All"
+                            onLoadClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, true, false) }}
+                            onSaveClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, true, false) }}
+                            onDeleteClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, true, false) }} />}
+                        {tableMeta.showConfigOptionsForDefault && <GetConfigMenu title="For Default"
+                            onLoadClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, false, true) }}
+                            onSaveClick={() => { tableMeta?.saveTableConfig && tableMeta.saveTableConfig(table, false, true) }}
+                            onDeleteClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, false, true) }} />}
                     </div>
-                    <DropdownMenuSeparator />
-                    <div className="flex items-center justify-between space-x-1">
-                        <Button onClick={() => { tableMeta?.deleteSavedTableConfig && tableMeta.deleteSavedTableConfig(table, deleteSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Delete</Button>
-                        <div className="flex items-center p-1 rounded hover:border-2"  >
-                            <Checkbox onCheckedChange={(value: any) =>
-                                setDeleteSavedTableConfigForAll(value)
-                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
-                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
-                        </div>
-
-                    </div>
-                    <DropdownMenuSeparator />
-                    <div className="flex items-center justify-between space-x-1">
-                        <Button onClick={() => { tableMeta?.loadSavedTableConfig && tableMeta.loadSavedTableConfig(table, loadSavedTableConfigForAll) }} variant="outline" className={cn("h-8 px-5 py-0.5 rounded hover:border-2 grow")} >Load</Button>
-                        <div className="flex items-center p-1 rounded hover:border-2"  >
-                            <Checkbox onCheckedChange={(value: any) =>
-                                setLoadSavedTableConfigForAll(value)
-                            } className="h-6 w-6" id={"cbdeletesavesconfigforall" + id} ></Checkbox>
-                            <label className="ps-1 grow" htmlFor={"cbdeletesavedconfigforall" + id} >For All</label>
-                        </div>
-                    </div>
-
                 </DropdownMenuSubContent>
             </DropdownMenuSub>)
         }
@@ -206,10 +210,37 @@ export function DataTable<T>({
         </Table>)
     }
 
+    function getSwitchTableButton() {
+        if (tableMeta.isTableForSelectedData) {
+            return (<Button
+                variant="link"
+                className="px-0.5 py-0.5 h-8 rounded hover:border-2"
+                onClick={() => {
+                    tableMeta.showMainTable && tableMeta.showMainTable()
+                }}
+            >
+                View All
+            </Button>)
+        }
+
+        return (<Button
+            variant="link"
+            className="px-0.5 py-0.5 h-8 rounded hover:border-2"
+            onClick={() => {
+                tableMeta.showSelectedTable && tableMeta.showSelectedTable()
+            }}
+        >
+            View Selected
+        </Button>)
+    }
+
     return (
         <div className="space-y-1">
             <div className="border ">
-                <div className="flex justify-end p-0.5">
+                <div className="flex justify-between p-0.5">
+                    <div>
+                        {getSwitchTableButton()}
+                    </div>
                     {getColumnMenu()}
                 </div>
                 {getTable()}
@@ -302,7 +333,6 @@ function SortOptionsForColumn<T>({ table, allColumns, column }: { table: TablePr
                     }
                     else {
                         column.toggleSorting(false, table.options.enableMultiSort === true)
-
                     }
                     sortChanged && sortChanged()
                 }}

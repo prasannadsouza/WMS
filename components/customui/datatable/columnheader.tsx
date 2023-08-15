@@ -1,18 +1,19 @@
-import { ArrowDownIcon, ArrowUpIcon, CaretSortIcon, EyeNoneIcon, CheckboxIcon, } from "@radix-ui/react-icons"
-import { Column, Table as TablePrimitive, ColumnDef } from "@tanstack/react-table"
+import { ArrowDownIcon, ArrowUpIcon, CaretSortIcon, EyeNoneIcon, CheckboxIcon } from "@radix-ui/react-icons"
+import { Column, Table as TablePrimitive, ColumnDef, Row } from "@tanstack/react-table"
+import { Trash2Icon as Trash2Icon, } from "lucide-react"
 /*
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import {    DropdownMenu,    DropdownMenuContent,    DropdownMenuItem,    DropdownMenuSeparator,    DropdownMenuTrigger,} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
-  */
+import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable/extensions"
+ */
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable-extensions"
+import { ColumnMeta, getTableMeta, DataTableConstants } from "@/components/customui/datatable/extensions"
 
 interface DataTableColumnHeaderProps<TData, TValue>
     extends React.HTMLAttributes<HTMLDivElement> {
@@ -82,6 +83,35 @@ export function DataTableColumnHeader<TData, TValue>({
     )
 }
 
+export function GetDataTableRowDeleteColumn<TData>() {
+    return {
+        id: DataTableConstants.delete,
+        enableSorting: false,
+        enableHiding: false,
+        meta: {
+            title: "Delete"
+        } as ColumnMeta,
+        header: ({ table }) => {
+            return (<div className="flex align-middle justify-center" >{
+                table.getCoreRowModel().rows.length > 0 && <Button variant={"ghost"}
+                    onClick={() => {
+                        const tableMeta = getTableMeta(table)
+                        tableMeta.onAllRowsDeleted && tableMeta.onAllRowsDeleted(table)
+                    }} className="h-6 y-6 px-1 py-1 hover:border-2"  >
+                    <Trash2Icon className="h-4 w-4 text-rose-600" />
+                </Button>}</div>)
+        },
+        cell: ({ row, table }) => {
+            return (<div className="flex align-middle justify-center" ><Button variant="ghost"
+                onClick={() => {
+                    const tableMeta = getTableMeta(table)
+                    tableMeta.onRowDeleted && tableMeta.onRowDeleted(row)
+                }} className="h-6 y-6 px-1 py-1 hover:border-2" >
+                <Trash2Icon className="h-4 w-4 text-rose-600 " />
+            </Button></div>)
+        },
+    } as ColumnDef<TData>
+}
 export function GetDataTableRowSelectionColumn<TData>(enableMultiRowSelection?: boolean) {
     return {
         id: DataTableConstants.select,
@@ -93,8 +123,21 @@ export function GetDataTableRowSelectionColumn<TData>(enableMultiRowSelection?: 
         header: ({ table }) => {
             if (!enableMultiRowSelection) return <div className="flex align-middle justify-center"><CheckboxIcon className="h-6 w-6" /></div>
             return (<div className="flex align-middle justify-center" ><Checkbox
-                onCheckedChange={(value: any) =>
+                onCheckedChange={(value: any) => {
+                    const tableMeta = getTableMeta(table);
+                    const unSelectedRows: Row<TData>[] = []
+                    const selectedRows: Row<TData>[] = []
+
+                    table.getCoreRowModel().rows.forEach((a) => {
+                        if (!value && a.getIsSelected()) unSelectedRows.push(a)
+                        if (value && !a.getIsSelected()) selectedRows.push(a)
+                    })
+
                     table.toggleAllRowsSelected(!!value)
+
+                    unSelectedRows.length && tableMeta.onSelectedRowRemoved && tableMeta.onSelectedRowRemoved(unSelectedRows)
+                    selectedRows.length && tableMeta.onSelectedRowAdded && tableMeta.onSelectedRowAdded(selectedRows)
+                }
                 }
                 className="h-6 w-6" checked={table.getIsAllRowsSelected()} >
             </Checkbox></div>)
@@ -103,13 +146,21 @@ export function GetDataTableRowSelectionColumn<TData>(enableMultiRowSelection?: 
             return (<div className="flex align-middle justify-center">
                 <Checkbox checked={row.getIsSelected()}
                     onCheckedChange={(value: any) => {
+                        const tableMeta = getTableMeta(table);
+                        const unSelectedRows: Row<TData>[] = []
+                        const selectedRows: Row<TData>[] = []
                         if (value && !enableMultiRowSelection) {
-                            table.getSelectedRowModel().rows.map((a) => {
-                                a.toggleSelected(false);
+                            table.getSelectedRowModel().rows.forEach((a) => {
+                                unSelectedRows.push(a)
+                                a.toggleSelected(false)
                             })
                         }
 
+                        if (!value && row.getIsSelected()) unSelectedRows.push(row)
+                        if (value && !row.getIsSelected()) selectedRows.push(row)
                         row.toggleSelected(!!value)
+                        unSelectedRows.length && tableMeta.onSelectedRowRemoved && tableMeta.onSelectedRowRemoved(unSelectedRows)
+                        selectedRows.length && tableMeta.onSelectedRowAdded && tableMeta.onSelectedRowAdded(selectedRows)
                     }
                     }
                     className="h-6 w-6">
