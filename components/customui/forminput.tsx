@@ -10,8 +10,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { cn } from "@/lib/utils"
-
+import { EyeNoneIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 
 export interface FormInputProps {
     title: string,
@@ -39,6 +38,7 @@ const FormInput = React.forwardRef((props: FormInputProps, ref) => {
     function getInitialModel() {
         return {
             error: "",
+            showPassword: false
         }
     }
 
@@ -62,28 +62,16 @@ const FormInput = React.forwardRef((props: FormInputProps, ref) => {
         setModel({ ...model, error: error })
     }
 
-    function getTextInputClass() {
-        let className = "mt-1 block w-full p-1 py-0 h-7 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 rounded m-0 peer appearance-none  ..."
-        if (model.error?.length) return className;
-        return className += " invalid border-red-500";
-    }
-
-    function getClearButtonClass() {
-        let className = "inline-flex flex-shrink-0 justify-center items-center rounded border border-transparent text-current  bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0 invisible";
-        if (refInput.current?.value?.length) className += " visible"
-        return className;
-    }
-
-    function getErrorLabel() {
-        let className = "block text-xs text-red-500 mt-1";
-        if (!model.error?.length) className += " hidden"
-        return (<Label className={cn(className)}>{model.error}</Label>)
-    }
-
     function onClearButtonClick() {
         refInput.current!.value = ""
         setModel({ ...model, error: "" });
         if (props.onValueCleared) props.onValueCleared();
+    }
+
+    function getInputType() {
+        if (props.inputType !== "password") return props.inputType;
+        if (model.showPassword) return "text";
+        return "password";
     }
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,12 +87,20 @@ const FormInput = React.forwardRef((props: FormInputProps, ref) => {
         <Label className="block text-xs">{props.title}</Label>
         <div>
             <div className="flex rounded border">
-                <Input defaultValue={props.initialValue} type={props.inputType} ref={refInput} onChange={handleChange} className={(getTextInputClass())} onBlur={() => { if (props.onBlur) props.onBlur() }} />
-                <Button tabIndex={-1} type="button" className={getClearButtonClass()} onClick={() => onClearButtonClick()} >
-                    <X size={15} />
-                </Button>
+                <Input defaultValue={props.initialValue} type={getInputType()} ref={refInput} onChange={handleChange} className="mt-1 block w-full p-1 py-0 h-7 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 rounded m-0 peer appearance-none" onBlur={() => { props.onBlur && props.onBlur() }} />
+
+                {props.inputType === "password" ?
+                    (<Button tabIndex={-1} type="button" className="border-transparent text-current bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0" onClick={() => {
+                        setModel({ ...model, showPassword: !model.showPassword })
+                    }}>
+                        {model.showPassword ? <EyeNoneIcon /> : <EyeOpenIcon />}
+                    </Button>) : null}
+                {refInput?.current?.value?.length ?
+                    (<Button tabIndex={-1} type="button" className="border-transparent text-current bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0" onClick={() => onClearButtonClick()} >
+                        <X size={15} />
+                    </Button>) : null}
             </div>
-            {getErrorLabel()}
+            {model.error?.length > 0 ? <Label className="block text-xs text-red-500 mt-1">{model.error}</Label> : null}
         </div>
     </div>)
 })

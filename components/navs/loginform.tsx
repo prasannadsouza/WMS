@@ -17,6 +17,8 @@ import { FormInput, FormInputHandle } from "@/components/customui/forminput"
 import { X } from "lucide-react";
 import React from 'react'
 import { useRouter } from 'next/navigation'
+import { AlertDialogPortal } from "@radix-ui/react-alert-dialog";
+import { Overlay } from "@radix-ui/react-alert-dialog";
 
 export interface LoginFormProps {
     validateUser: fnValidateUserType,
@@ -123,31 +125,22 @@ export default function LoginForm(props: LoginFormProps) {
         }
     }, [model.isLoginSuccess]);
 
-    React.useEffect(() => {
-        const onPageLoad = () => {
-            refUsername?.current?.setFocus();
-        };
-
-        if (document.readyState === 'complete') {
-            onPageLoad();
-        } else {
-            window.addEventListener('load', onPageLoad);
-            // Remove the event listener when component unmounts
-            return () => window.removeEventListener('load', onPageLoad);
-        }
-    }, [])
-
     return (
         <AlertDialog onOpenChange={onOpenChange}>
             <AlertDialogTrigger asChild>
-                <Button variant="link" className="hover:no-underline" >
+                <Button variant="link" className="hover:no-underline hover:border-2 " >
                     {props.userMenuTriggerElement}
                 </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="p-2 rounded gap-1">
+            <AlertDialogContent className="p-2 rounded gap-1" onOpenAutoFocus={(event: Event) => {
+                if (refUsername?.current) {
+                    refUsername.current.setFocus();
+                    event.preventDefault();
+                }
+            }} >
                 <AlertDialogHeader className=" flex items-end">
-                    <AlertDialogCancel className="h-9 mt-0">
-                        <X />
+                    <AlertDialogCancel className="px-2 py-1 mt-0 hover:border-2">
+                        <X className="h-6 w-6" />
                     </AlertDialogCancel>
                 </AlertDialogHeader>
                 <div>
