@@ -59,9 +59,9 @@ function getMainMenu(props: NavigationBarProps) {
     }
 
     if (props.mainMenuContent) {
-        return (<Menubar className="flex border-0">
+        return (<Menubar className="flex border-0 px-0 py-0 h-auto">
             <MenubarMenu>
-                <MenubarTrigger className={cn("p-0 cursor-pointer m-auto p-1 hover:border-2")}>
+                <MenubarTrigger className={cn("p-0 cursor-pointer m-auto px-1 py-1 hover:border-2")}>
                     <Menu size="35" />
                     {getImage()}
                 </MenubarTrigger>
@@ -125,7 +125,7 @@ function getUserMenu(props: NavigationBarProps) {
     return (<div className={cn("ms-auto")}>
         <Menubar className="border-0 contents">
             <MenubarMenu>
-                <MenubarTrigger className="cursor-pointer hover:border-2">
+                <MenubarTrigger className="cursor-pointer hover:border-2 py-0.5">
                     <User className="mr-1" />
                     {getUserMenuTriggerTitle()}
                 </MenubarTrigger>

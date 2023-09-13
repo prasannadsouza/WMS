@@ -22,22 +22,22 @@ const users: User[] = [
     {
         id: "pra",
         name: "Prasanna",
-        email: "email@email.com",
+        email: "pra@email.com",
     },
     {
         id: "pra2",
         name: "Prasanna",
-        email: "email@email.com",
+        email: "pra2@email.com",
     },
     {
         id: "pra3",
         name: "Prasanna",
-        email: "email@email.com",
+        email: "pra3@email.com",
     },
     {
         id: "pra4",
         name: "Prasanna",
-        email: "email@email.com",
+        email: "pra4@email.com",
     },
 ];
 

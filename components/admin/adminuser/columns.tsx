@@ -60,7 +60,7 @@ export function getDefaultTableConfig() {
     return tableConfig;
 }
 
-export function getTableColumns<AppUser>(
+export function getTableColumns(
     enableRowSelection?: boolean, enableMultiRowSelection?: boolean, showActions?: boolean, showDeleteRow?: boolean
 ) {
     let columns: ColumnDef<AppUser>[] = [
@@ -69,6 +69,7 @@ export function getTableColumns<AppUser>(
             accessorKey: AdminUserConstants.id,
             enableSorting: true,
             enableHiding: false,
+            enableColumnFilter: true,
             meta: {
                 title: "Id"
             } as ColumnMeta,
@@ -82,6 +83,7 @@ export function getTableColumns<AppUser>(
             accessorKey: AdminUserConstants.firstName,
             enableSorting: true,
             enableHiding: false,
+            enableColumnFilter: true,
             meta: {
                 title: "First Name"
             } as ColumnMeta,
@@ -102,6 +104,7 @@ export function getTableColumns<AppUser>(
             accessorKey: AdminUserConstants.lastName,
             enableSorting: true,
             enableHiding: false,
+            enableColumnFilter: true,
             meta: {
                 title: "Last Name"
             } as ColumnMeta,
@@ -122,6 +125,7 @@ export function getTableColumns<AppUser>(
             accessorKey: AdminUserConstants.email,
             enableSorting: true,
             enableHiding: true,
+            enableColumnFilter: true,
             meta: {
                 title: "Email"
             } as ColumnMeta,
@@ -134,17 +138,17 @@ export function getTableColumns<AppUser>(
                         {row.getValue(AdminUserConstants.email)}
                     </span>
                 )
-            },
-
-            filterFn: (row, id, value) => {
-                return value.includes(row.getValue(id))
-            },
+            }
         },
         {
             id: AdminUserConstants.enabled,
             accessorKey: AdminUserConstants.enabled,
             enableSorting: true,
             enableHiding: true,
+            enableColumnFilter: true,
+            accessorFn: (row) => {
+                return row.enabled ? "Yes" : "No"
+            },
             meta: {
                 title: "Enabled"
             } as ColumnMeta,
@@ -154,12 +158,9 @@ export function getTableColumns<AppUser>(
             cell: ({ row }) => {
                 return (
                     <span>
-                        {row.getValue(AdminUserConstants.enabled) ? "Yes" : "No"}
+                        {row.getValue(AdminUserConstants.enabled)}
                     </span>
                 )
-            },
-            filterFn: (row, id, value) => {
-                return value.includes(row.getValue(id))
             },
         },]
 
@@ -169,6 +170,7 @@ export function getTableColumns<AppUser>(
                 id: DataTableConstants.actions,
                 enableSorting: false,
                 enableHiding: false,
+                enableColumnFilter: false,
                 meta: {
                     title: "Actions"
                 } as ColumnMeta,

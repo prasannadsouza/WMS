@@ -1,59 +1,32 @@
 import React from "react";
-import { ColumnFiltersState, getCoreRowModel, useReactTable, Table as TablePrimitive, Row as RowPrimitive, RowSelectionState, ColumnDef } from "@tanstack/react-table"
+import { ColumnFiltersState, getCoreRowModel, getFilteredRowModel, useReactTable, Table as TablePrimitive, Row as RowPrimitive, RowSelectionState } from "@tanstack/react-table"
 
 /*
-import { fnSaveTableConfig as fnServerSaveTableConfig, fnGetTableConfig as fnServerGetTableConfig, fnDeleteSavedTableConfig as fnServerDeleteSavedTableConfig, fnGetData as fnServerGetData } from "@/lib/types/types"
 import { TableConfig, ResponseData, getResponseData } from "@/lib/types/types";
 import { TableMeta, initializeTableState, getTableMeta, getPageCount, getTableSortConfig, getTableConfig as getTableConfigFromTable } from "@/components/customui/datatable/extensions";
 import { App as AppConstants } from "@/lib/types/constants"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/customui/datatable/datatable";
 import { SelectedDataTable } from "@/components/customui/datatable/selecteddatatable";
+import { CommonDialogProps, DataTableContainerProps, DataTableProps } from '@/lib/types/props';
  */
-import { fnSaveTableConfig as fnServerSaveTableConfig, fnGetTableConfig as fnServerGetTableConfig, fnDeleteSavedTableConfig as fnServerDeleteSavedTableConfig, fnGetData as fnServerGetData } from "@/lib/types/types"
 import { TableConfig, ResponseData, getResponseData } from "@/lib/types/types";
 import { TableMeta, initializeTableState, getTableMeta, getPageCount, getTableSortConfig, getTableConfig as getTableConfigFromTable } from "@/components/customui/datatable/extensions";
 import { App as AppConstants } from "@/lib/types/constants"
 import { Button } from "@/components/ui/button"
 import { DataTable } from "@/components/customui/datatable/datatable";
 import { SelectedDataTable } from "@/components/customui/datatable/selecteddatatable";
+import { CommonDialogProps, DataTableContainerProps, DataTableProps } from '@/lib/types/props';
 
-export function DataTableContainer<T>({
-    tableType,
-    tableId,
-    idProperty,
-    getData,
-    getTableConfig,
-    saveTableConfig,
-    deleteSavedTableConfig,
-    dataSelectCompleted,
-    dataSelectCancelled,
-    enableRowSelection,
-    enableMultiRowSelection,
-    getDefaultTableConfig,
-    showConfigOptionsForAll,
-    showConfigOptionsForDefault,
-    mainTableColumns,
-    selectedTableColumns,
-}: {
-    tableType: string,
-    tableId: string,
-    idProperty: string,
-    getData: fnServerGetData<T>,
-    getTableConfig: fnServerGetTableConfig,
-    saveTableConfig?: fnServerSaveTableConfig,
-    deleteSavedTableConfig?: fnServerDeleteSavedTableConfig,
-    dataSelectCompleted?: (data: T[]) => void,
-    dataSelectCancelled?: () => void,
-    enableRowSelection?: boolean,
-    enableMultiRowSelection?: boolean,
-    getDefaultTableConfig: () => TableConfig,
-    showConfigOptionsForAll?: boolean,
-    showConfigOptionsForDefault?: boolean,
-    mainTableColumns: ColumnDef<T>[],
-    selectedTableColumns: ColumnDef<T>[],
-}) {
+export interface Props<T> {
+    containerProps: DataTableContainerProps<T>
+    tableProps: DataTableProps<T>,
+    commonDialogProps: CommonDialogProps,
+}
 
+export function DataTableContainer<T>({ props }: { props: Props<T> }) {
+
+    const { containerProps, tableProps } = props
     const [tableResponseData, setTableResponseData] = React.useState<ResponseData<T[]>>(getResponseData<T[]>([]));
     const [tableRowSelection, setTableRowSelection] = React.useState({})
     const [tableColumnFilters, setTableColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -65,18 +38,77 @@ export function DataTableContainer<T>({
 
     const getValue = (property: string, data: any) => data[property]
 
+    const tableMeta: TableMeta<T> = {
+        tableType: tableProps.tableType,
+        id: containerProps.tableId,
+        showConfigOptionsForAll: containerProps.showConfigOptionsForAll,
+        showConfigOptionsForDefault: containerProps.showConfigOptionsForDefault,
+        isTableForSelectedData: false,
+        enableRowSelection: containerProps.enableRowSelection,
+        enableMultiRowSelection: containerProps.enableMultiRowSelection,
+        sortChanged: () => {
+            if (tableConfig === null) return;
+            setMainTableIsSortingChanged(true);
+        },
+        saveTableConfig: async (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => {
+            const tableMeta = getTableMeta(table)
+            containerProps.saveTableConfig && await containerProps.saveTableConfig(tableMeta.tableType, tableMeta.id, getTableConfigFromTable(table), forAll, forDefault);
+        },
+        deleteSavedTableConfig: async (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => {
+            const tableMeta = getTableMeta(table)
+            containerProps.deleteSavedTableConfig && await containerProps.deleteSavedTableConfig(tableMeta.tableType, tableMeta.id, forAll, forDefault);
+            let tableConfig = initializeTableState(table, tableProps.getDefaultTableConfig())
+            setTableConfig(tableConfig)
+            setMainTableIsSortingChanged(true)
+        },
+        loadSavedTableConfig: async (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => {
+            const tableMeta = getTableMeta(table)
+            const responseData = await containerProps.getTableConfig(tableMeta.tableType, tableMeta.id, forAll, forDefault, false);
+            let tableConfig = responseData.data;
+            if (!tableConfig) tableConfig = tableProps.getDefaultTableConfig()
+            tableConfig = initializeTableState(table, tableConfig)
+            setTableConfig(tableConfig)
+            setMainTableIsSortingChanged(true)
+        },
+        showSelectedTable: () => {
+            setShowSelected(true);
+        },
+        onSelectedRowRemoved: (rows: RowPrimitive<T>[]) => {
+            rows.forEach((row) => {
+                const index = selectedTableData.findIndex((a) => getValue(tableProps.idProperty, a) === getValue(tableProps.idProperty, row.original))
+                if (index >= 0) selectedTableData.splice(index, 1)
+            })
+            setSelectedTableData(selectedTableData)
+        },
+        onSelectedRowAdded: (rows: RowPrimitive<T>[]) => {
+            rows.forEach((row) => {
+                const index = selectedTableData.findIndex((a) => getValue(tableProps.idProperty, a) === getValue(tableProps.idProperty, row.original))
+                if (index >= 0) {
+                    selectedTableData.splice(index, 1, row.original)
+                }
+                else {
+                    selectedTableData.push(row.original)
+                }
+            })
+
+            setSelectedTableData(selectedTableData)
+        },
+        tableConfig: tableConfig,
+    }
+
     const table = useReactTable({
         data: tableResponseData.data ?? [],
-        columns: mainTableColumns,
+        columns: tableProps.mainTableColumns,
         state: {
             rowSelection: tableRowSelection,
             columnFilters: tableColumnFilters,
         },
-        enableRowSelection,
-        enableMultiRowSelection,
+        enableRowSelection: containerProps.enableRowSelection,
+        enableMultiRowSelection: containerProps.enableMultiRowSelection,
         onRowSelectionChange: setTableRowSelection,
         onColumnFiltersChange: setTableColumnFilters,
         getCoreRowModel: getCoreRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
         manualPagination: true,
         enableMultiSort: true,
         manualSorting: true,
@@ -88,60 +120,7 @@ export function DataTableContainer<T>({
                 pageSize: tableResponseData.pagination?.recordsPerPage ?? Math.min(...AppConstants.Pagination.pageSizeRange),
             }
         },
-        meta: {
-            tableType,
-            id: tableId,
-            showConfigOptionsForAll,
-            showConfigOptionsForDefault,
-            isTableForSelectedData: false,
-            enableRowSelection,
-            enableMultiRowSelection,
-            sortChanged: () => {
-                if (tableConfig === null) return;
-                setMainTableIsSortingChanged(true);
-            },
-            saveTableConfig: async (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => {
-                saveTableConfig && await saveTableConfig(tableType, tableId, getTableConfigFromTable(table), forAll, forDefault);
-            },
-            deleteSavedTableConfig: async (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => {
-                deleteSavedTableConfig && await deleteSavedTableConfig(tableType, getTableMeta(table).id, forAll, forDefault);
-                let tableConfig = initializeTableState(table, getDefaultTableConfig())
-                setTableConfig(tableConfig)
-                setMainTableIsSortingChanged(true)
-            },
-            loadSavedTableConfig: async (table: TablePrimitive<T>, forAll: boolean, forDefault: boolean) => {
-                const responseData = await getTableConfig(tableType, getTableMeta(table).id, forAll, forDefault, false);
-                let tableConfig = responseData.data;
-                if (!tableConfig) tableConfig = getDefaultTableConfig()
-                tableConfig = initializeTableState(table, tableConfig)
-                setTableConfig(tableConfig)
-                setMainTableIsSortingChanged(true)
-            },
-            showSelectedTable: () => {
-                setShowSelected(true);
-            },
-            onSelectedRowRemoved: (rows: RowPrimitive<T>[]) => {
-                rows.forEach((row) => {
-                    const index = selectedTableData.findIndex((a) => getValue(idProperty, a) === getValue(idProperty, row.original))
-                    if (index >= 0) selectedTableData.splice(index, 1)
-                })
-                setSelectedTableData(selectedTableData)
-            },
-            onSelectedRowAdded: (rows: RowPrimitive<T>[]) => {
-                rows.forEach((row) => {
-                    const index = selectedTableData.findIndex((a) => getValue(idProperty, a) === getValue(idProperty, row.original))
-                    if (index >= 0) {
-                        selectedTableData.splice(index, 1, row.original)
-                    }
-                    else {
-                        selectedTableData.push(row.original)
-                    }
-                })
-
-                setSelectedTableData(selectedTableData)
-            },
-            tableConfig: tableConfig,
-        } as TableMeta<T>
+        meta: tableMeta
     })
 
     React.useEffect(() => {
@@ -160,12 +139,12 @@ export function DataTableContainer<T>({
     React.useEffect(() => {
         if (!isDataLoaded) return;
 
-        if (enableRowSelection) {
+        if (containerProps.enableRowSelection) {
             const rows = table.getRowModel().rows as RowPrimitive<T>[]
             const rowSelectionState: RowSelectionState = {};
 
             rows.forEach((row) => {
-                const index = selectedTableData.findIndex((a) => getValue(idProperty, a) === getValue(idProperty, row.original))
+                const index = selectedTableData.findIndex((a) => getValue(tableProps.idProperty, a) === getValue(tableProps.idProperty, row.original))
                 if (index >= 0) {
                     selectedTableData.splice(index, 1, row.original)
                     rowSelectionState[row.id] = true;
@@ -177,13 +156,15 @@ export function DataTableContainer<T>({
 
     }, [isDataLoaded])
 
+
     React.useEffect(() => {
         if (tableConfig !== null) return;
         (async () => {
             try {
-                const responseData = await getTableConfig(tableType, tableId, false, false, true);
+
+                const responseData = await containerProps.getTableConfig(tableMeta.tableType, tableMeta.id, false, false, true);
                 let tableConfig = responseData.data;
-                if (!tableConfig) tableConfig = getDefaultTableConfig()
+                if (!tableConfig) tableConfig = tableProps.getDefaultTableConfig()
                 tableConfig = initializeTableState(table, tableConfig)
                 setTableConfig(tableConfig)
                 setMainTableIsSortingChanged(true)
@@ -197,7 +178,7 @@ export function DataTableContainer<T>({
     function localGetData() {
         (async () => {
             try {
-                const responseData = await getData(table.getState().pagination.pageIndex, table.getState().pagination.pageSize, getTableSortConfig(table));
+                const responseData = await tableProps.getData(table.getState().pagination.pageIndex, table.getState().pagination.pageSize, getTableSortConfig(table));
                 setTableResponseData(responseData)
                 setIsDataLoaded(true);
             } catch (err) {
@@ -208,7 +189,7 @@ export function DataTableContainer<T>({
 
     function selectedDataRemoved(removedData: T[]) {
         const finalData = selectedTableData.filter((a) => {
-            const matched = removedData.find((b) => getValue(idProperty, b) == getValue(idProperty, a))
+            const matched = removedData.find((b) => getValue(tableProps.idProperty, b) == getValue(tableProps.idProperty, a))
             return (!matched)
         })
         setSelectedTableData(finalData)
@@ -217,34 +198,38 @@ export function DataTableContainer<T>({
 
     return (<div >
         <div className={showSelected ? "" : "hidden"}><SelectedDataTable
-            tableType={tableType}
-            tableId={`${tableId}_selected`}
-            saveTableConfig={saveTableConfig}
-            deleteSavedTableConfig={deleteSavedTableConfig}
-            getTableConfig={getTableConfig}
-            selectedTableData={[...selectedTableData]}
-            onShowSelected={() => setShowSelected(false)}
-            onSelectedRowsRemoved={selectedDataRemoved}
-            selectedTableColumns={selectedTableColumns}
-            fnGetDefaultTableConfig={getDefaultTableConfig}
-        />
+            props={{
+                tableProps: {
+                    tableType: tableProps.tableType,
+                    tableId: `${containerProps.tableId}_selected`,
+                    saveTableConfig: containerProps.saveTableConfig,
+                    deleteSavedTableConfig: containerProps.deleteSavedTableConfig,
+                    getTableConfig: containerProps.getTableConfig,
+                    tableData: [...selectedTableData],
+                    onShowSelected: () => setShowSelected(false),
+                    onSelectedRowsRemoved: selectedDataRemoved,
+                    tableColumns: tableProps.selectedTableColumns,
+                    getDefaultTableConfig: tableProps.getDefaultTableConfig,
+                },
+                commonDialogProps: props.commonDialogProps
+            }} />
         </div>
         <div className={showSelected ? "hidden" : ""}>
-            <DataTable table={table} />
+            <DataTable props={{ table: table, commonDialogProps: props.commonDialogProps }} />
         </div>
-        {enableRowSelection &&
+        {containerProps.enableRowSelection &&
             <div>
                 <hr className='mt-2' />
                 <div className="flex justify-between p-0.5 mt-1">
                     <div>
                         <Button onClick={() => {
-                            dataSelectCancelled && dataSelectCancelled()
+                            containerProps.dataSelectCancelled && containerProps.dataSelectCancelled()
                         }} variant="outline" className={"h-8 px-5 py-0.5 rounded hover:border-2 grow"} >Cancel</Button>
                     </div>
                     <div>
                         {selectedTableData.length > 0 &&
                             <Button onClick={() => {
-                                dataSelectCompleted && dataSelectCompleted(selectedTableData)
+                                containerProps.dataSelectCompleted && containerProps.dataSelectCompleted(selectedTableData)
                             }} variant="outline" className={" h-8 px-5 py-0.5 rounded hover:border-2 grow"} >Select</Button>}
                     </div>
                 </div>

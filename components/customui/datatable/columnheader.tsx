@@ -112,6 +112,7 @@ export function GetDataTableRowDeleteColumn<TData>() {
         },
     } as ColumnDef<TData>
 }
+
 export function GetDataTableRowSelectionColumn<TData>(enableMultiRowSelection?: boolean) {
     return {
         id: DataTableConstants.select,

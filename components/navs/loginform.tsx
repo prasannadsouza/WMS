@@ -17,8 +17,6 @@ import { FormInput, FormInputHandle } from "@/components/customui/forminput"
 import { X } from "lucide-react";
 import React from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertDialogPortal } from "@radix-ui/react-alert-dialog";
-import { Overlay } from "@radix-ui/react-alert-dialog";
 
 export interface LoginFormProps {
     validateUser: fnValidateUserType,
@@ -84,6 +82,7 @@ export default function LoginForm(props: LoginFormProps) {
     async function submitLogin() {
 
         let hasError = false;
+        let focusSet = true;
 
         console.log({
             component: "loginform!submitlogin",
@@ -95,13 +94,17 @@ export default function LoginForm(props: LoginFormProps) {
         if (!refUsername.current!.getValue().length) {
             refUsername?.current?.setError("Please provide username");
             refUsername?.current?.setFocus();
+            focusSet = true;
             hasError = true;
         }
 
         refPassword?.current?.setError("");
         if (!refPassword.current!.getValue().length) {
             refPassword?.current?.setError("Please provide password");
-            refPassword?.current!.setFocus();
+            if (!focusSet) {
+                refPassword?.current!.setFocus();
+                focusSet = true;
+            }
             hasError = true
         }
 
@@ -128,7 +131,7 @@ export default function LoginForm(props: LoginFormProps) {
     return (
         <AlertDialog onOpenChange={onOpenChange}>
             <AlertDialogTrigger asChild>
-                <Button variant="link" className="hover:no-underline hover:border-2 " >
+                <Button variant="link" className="hover:no-underline hover:border-2 py-0.5 h-fit" >
                     {props.userMenuTriggerElement}
                 </Button>
             </AlertDialogTrigger>
@@ -145,7 +148,7 @@ export default function LoginForm(props: LoginFormProps) {
                 </AlertDialogHeader>
                 <div>
                     <FormInput ref={refUsername} inputType={"text"} title="Username" minWidth={"200px"} />
-                    <FormInput ref={refPassword} inputType={"password"} title="Password" minWidth={200} containerClassName="mt-2" />
+                    <FormInput ref={refPassword} inputType={"password"} title="Password" minWidth={"200px"} containerClassName="mt-2" />
                 </div>
                 <AlertDialogFooter className="block">
                     <div className="flex flex-wrap justify-end">

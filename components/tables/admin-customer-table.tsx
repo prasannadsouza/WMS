@@ -25,19 +25,19 @@ const customers: Customer[] = [
         id: "most",
         name: "Malmo Ost",
         count: 1,
-        email: "email@email.com",
+        email: "mo@most.com",
     },
     {
         id: "ikea",
         name: "IKEA",
         count: 4,
-        email: "email@email.com",
+        email: "ik@ikea.com",
     },
     {
         id: "bata",
         name: "BATA",
         count: 2,
-        email: "email@email.com",
+        email: "ba@bata.com",
     },
 ];
 

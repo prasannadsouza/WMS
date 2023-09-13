@@ -13,7 +13,8 @@ import { Label } from "@/components/ui/label"
 import { EyeNoneIcon, EyeOpenIcon } from "@radix-ui/react-icons";
 
 export interface FormInputProps {
-    title: string,
+    title?: string,
+    showLeftTitle?: boolean,
     initialValue?: string,
     minWidth: number | string
     maxWidth?: number | string | undefined,
@@ -80,29 +81,51 @@ const FormInput = React.forwardRef((props: FormInputProps, ref) => {
         if (props.onTextChange) props.onTextChange(value);
     };
 
-    return (<div className={props.containerClassName} style={{
-        minWidth: props.minWidth,
-        maxWidth: props.maxWidth
-    }}>
-        <Label className="block text-xs">{props.title}</Label>
-        <div>
-            <div className="flex rounded border">
-                <Input defaultValue={props.initialValue} type={getInputType()} ref={refInput} onChange={handleChange} className="mt-1 block w-full p-1 py-0 h-7 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 rounded m-0 peer appearance-none" onBlur={() => { props.onBlur && props.onBlur() }} />
+    function LeftTitle() {
+        if (!props.showLeftTitle) return null;
+        if (!props.title?.length) return null;
 
-                {props.inputType === "password" ?
-                    (<Button tabIndex={-1} type="button" className="border-transparent text-current bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0" onClick={() => {
-                        setModel({ ...model, showPassword: !model.showPassword })
-                    }}>
-                        {model.showPassword ? <EyeNoneIcon /> : <EyeOpenIcon />}
-                    </Button>) : null}
-                {refInput?.current?.value?.length ?
-                    (<Button tabIndex={-1} type="button" className="border-transparent text-current bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0" onClick={() => onClearButtonClick()} >
-                        <X size={15} />
-                    </Button>) : null}
+        return (<div className="my-auto" >
+            {props.title?.length ? <Label>{props.title}</Label> : null}
+        </div>)
+    }
+
+    function TopTitle() {
+        if (props.showLeftTitle) return null;
+        if (!props.title?.length) return null;
+        return (
+            <Label className="block text-xs">{props.title}</Label>
+        )
+    }
+
+    return (
+        <div className={props.showLeftTitle ? "flex space-x-1" : ""}>
+            <LeftTitle />
+            <div className={props.containerClassName} style={{
+                minWidth: props.minWidth,
+                maxWidth: props.maxWidth
+            }}>
+                <div className="my-auto">
+                    <TopTitle />
+                    <div className="flex rounded border">
+                        <Input defaultValue={props.initialValue} type={getInputType()} ref={refInput} onChange={handleChange} className="mt-1 block w-full p-1 py-0 h-7 focus-visible:ring-0 focus-visible:ring-offset-0 border-0 rounded m-0 peer appearance-none" onBlur={() => { props.onBlur && props.onBlur() }} />
+
+                        {props.inputType === "password" ?
+                            (<Button tabIndex={-1} type="button" className="border-transparent text-current bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0" onClick={() => {
+                                setModel({ ...model, showPassword: !model.showPassword })
+                            }}>
+                                {model.showPassword ? <EyeNoneIcon /> : <EyeOpenIcon />}
+                            </Button>) : null}
+                        {refInput?.current?.value?.length ?
+                            (<Button tabIndex={-1} type="button" className="border-transparent text-current bg-transparent hover:text-current hover:bg-transparent  font-semibold text-sm px-2 h-7 y-0 m-0" onClick={() => onClearButtonClick()} >
+                                <X size={15} />
+                            </Button>) : null}
+                    </div>
+                    {model.error?.length > 0 ? <Label className="block text-xs text-red-500 mt-1">{model.error}</Label> : null}
+                </div>
             </div>
-            {model.error?.length > 0 ? <Label className="block text-xs text-red-500 mt-1">{model.error}</Label> : null}
         </div>
-    </div>)
+    )
 })
 
 export { FormInput }

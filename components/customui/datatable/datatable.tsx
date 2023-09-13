@@ -12,6 +12,9 @@ import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, init
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { FormInput, FormInputHandle } from "@/components/customui/forminput"
+import { ConfirmDialog } from '@/lib/types/models'
+import { CommonDialogProps } from '@/lib/types/props';
 */
 import { DropdownMenu, DropdownMenuContent, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table"
@@ -20,21 +23,24 @@ import useStickyHeader, { getColumnTitle, getTableMeta, DataTableConstants, init
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { FormInput, FormInputHandle } from "@/components/customui/forminput"
+import { ConfirmDialog } from '@/lib/types/models'
+import { CommonDialogProps } from '@/lib/types/props';
 
+export interface Props<T> {
+    table: TablePrimitive<T>,
+    commonDialogProps: CommonDialogProps,
+}
 
 export function DataTable<T>({
-    table,
+    props,
 
-}: { table: TablePrimitive<T> }) {
+}: { props: Props<T>, }) {
 
+    const { table, commonDialogProps } = props
     const { tableRef, isSticky } = useStickyHeader();
+    const refFilterColumns = React.useRef<FormInputHandle>(null);
     const tableMeta = getTableMeta(table)
-
-    if (!tableMeta.isTableForSelectedData && !table.getRowModel().rows?.length) {
-        return (
-            <div>No Results</div>
-        )
-    }
 
     const allColsForSort = getColumnsForSort(table);
 
@@ -66,15 +72,13 @@ export function DataTable<T>({
 
     function getColumnMenu() {
 
-
-
         function GetConfigMenu({ title, onSaveClick, onLoadClick, onDeleteClick }: {
             title: string
             , onSaveClick: () => void
             , onLoadClick: () => void
             , onDeleteClick: () => void
         }) {
-            return (<DropdownMenuSub>
+            return (<DropdownMenuSub >
                 <DropdownMenuSubTrigger>
                     {title}
                 </DropdownMenuSubTrigger>
@@ -87,7 +91,23 @@ export function DataTable<T>({
                             <Button onClick={() => { onLoadClick() }} variant="outline" className={cn("flex  h-8 px-5 py-0.5 rounded grow hover:border-2")} >Load</Button>
                         </div>
                         <div className="flex">
-                            <Button onClick={() => { onDeleteClick() }} variant="outline" className={cn("flex  h-8 px-5 py-0.5 rounded grow hover:border-2")} >Delete</Button>
+                            <Button onClick={() => {
+                                const model: ConfirmDialog = {
+                                    title: "Confirm Delete Config",
+                                    message: "Are you sure you want to delete table conifg",
+                                    confirmTitle: "Yes",
+                                    cancelTitle: "No",
+                                }
+
+                                const useConfirm = commonDialogProps?.useConfirm
+                                useConfirm && useConfirm.showConfirm({ model, onClose: onDeleteConfirmed })
+
+                                function onDeleteConfirmed(confirmed: Boolean) {
+                                    if (confirmed) onDeleteClick()
+                                }
+
+
+                            }} variant="outline" className={cn("flex  h-8 px-5 py-0.5 rounded grow hover:border-2")} >Delete</Button>
                         </div>
                     </div>
                 </DropdownMenuSubContent>
@@ -237,11 +257,26 @@ export function DataTable<T>({
     return (
         <div className="space-y-1">
             <div className="border ">
-                <div className="flex justify-between p-0.5">
+                <div className="flex flex-wrap justify-between p-0.5">
                     <div>
                         {getSwitchTableButton()}
                     </div>
-                    {getColumnMenu()}
+                    <div className="flex flex-wrap justify-between sm:justify-end">
+                        <div className="align-middle ms-1" >
+                            <FormInput ref={refFilterColumns} inputType={"text"} showLeftTitle={true} title="InSearch" minWidth={"100px"} onTextChange={(value: string) => {
+                                table.options.onGlobalFilterChange && table.options.onGlobalFilterChange(value)
+
+                            }}
+                                onValueCleared={() => {
+                                    table.options.onGlobalFilterChange && table.options.onGlobalFilterChange("")
+                                }}
+                            />
+                        </div>
+                        <div className="ml-1 flex grow justify-between">
+                            <div className="grow"></div>
+                            {getColumnMenu()}
+                        </div>
+                    </div>
                 </div>
                 {getTable()}
             </div>
@@ -259,7 +294,7 @@ function CheckBoxForShowColumn<T>({ column }: { column: Column<T, unknown> }) {
             }
             className="h-6 w-6" checked={column.getIsVisible()}>
         </Checkbox>
-        <label className="ps-1 grow" htmlFor={id} >        <span>{getColumnTitleElement(column)}</span></label>
+        <label className="ps-1 grow" htmlFor={id} ><span>{getColumnTitleElement(column)}</span></label>
 
     </div>)
 }

@@ -37,12 +37,12 @@ export default function AdminUsersHome() {
     return (
         <div className='pb-2'>
             <SetPageTitle title="Admins" />
-            <ClientPage
-                getTableConfig={localGetTableConfig}
-                saveTableConfig={localSaveTableConfig}
-                deleteSavedTableConfig={localDeleteSavedTableConfig}
-                getAdminUsers={localGetAdminUsers} />
+            <ClientPage props={{
+                getTableConfig: localGetTableConfig,
+                saveTableConfig: localSaveTableConfig,
+                deleteSavedTableConfig: localDeleteSavedTableConfig,
+                getAdminUsers: localGetAdminUsers
+            }} />
         </div>
-
     );
 }
